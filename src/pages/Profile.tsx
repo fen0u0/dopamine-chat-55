@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,12 +16,17 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
+import EditProfileModal from "@/components/EditProfileModal";
+import SafetyCenterModal from "@/components/SafetyCenterModal";
 import { useGems } from "@/contexts/GemsContext";
+import { toast } from "sonner";
 import profile1 from "@/assets/profile-1.jpg";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { gems } = useGems();
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showSafetyModal, setShowSafetyModal] = useState(false);
   
   const user = {
     name: "You",
@@ -33,12 +39,16 @@ const Profile = () => {
     interests: ["Travel", "Photography", "Music", "Hiking", "Coffee"],
   };
 
+  const handleLogout = () => {
+    toast.success("Logged out successfully");
+  };
+
   const menuItems = [
     { icon: <Gem className="w-5 h-5" />, label: "Get Gems", chevron: true, action: () => navigate("/settings") },
-    { icon: <Shield className="w-5 h-5" />, label: "Safety Center", chevron: true },
+    { icon: <Shield className="w-5 h-5" />, label: "Safety Center", chevron: true, action: () => setShowSafetyModal(true) },
     { icon: <Settings className="w-5 h-5" />, label: "Settings", chevron: true, action: () => navigate("/settings") },
     { icon: <Heart className="w-5 h-5" />, label: "Get Premium", highlight: true, action: () => navigate("/settings") },
-    { icon: <LogOut className="w-5 h-5" />, label: "Log Out", danger: true },
+    { icon: <LogOut className="w-5 h-5" />, label: "Log Out", danger: true, action: handleLogout },
   ];
 
   return (
@@ -60,10 +70,15 @@ const Profile = () => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
             
-            {/* Edit Button */}
-            <button className="absolute top-4 right-4 w-10 h-10 rounded-full glass flex items-center justify-center">
+            {/* Camera Button */}
+            <motion.button 
+              className="absolute top-4 right-4 w-10 h-10 rounded-full glass flex items-center justify-center"
+              onClick={() => setShowEditModal(true)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
               <Camera className="w-5 h-5 text-foreground" />
-            </button>
+            </motion.button>
 
             {/* Profile Info */}
             <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -77,9 +92,14 @@ const Profile = () => {
                     <span className="text-sm">{user.location}</span>
                   </div>
                 </div>
-                <button className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                <motion.button 
+                  className="w-12 h-12 rounded-full bg-primary flex items-center justify-center"
+                  onClick={() => setShowEditModal(true)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
                   <Edit2 className="w-5 h-5 text-primary-foreground" />
-                </button>
+                </motion.button>
               </div>
             </div>
           </div>
@@ -97,13 +117,16 @@ const Profile = () => {
             { label: "Matches", value: "12" },
             { label: "Likes", value: "24" },
           ].map((stat) => (
-            <div
+            <motion.div
               key={stat.label}
-              className="glass rounded-2xl p-4 text-center"
+              className="glass rounded-2xl p-4 text-center cursor-pointer"
+              onClick={() => stat.isGems && navigate("/settings")}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
               <p className="text-2xl font-bold gradient-text">{stat.value}</p>
               <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
 
@@ -157,12 +180,13 @@ const Profile = () => {
           transition={{ delay: 0.4 }}
         >
           {menuItems.map((item, index) => (
-            <button
+            <motion.button
               key={item.label}
               onClick={item.action}
               className={`w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors ${
                 index !== menuItems.length - 1 ? "border-b border-border" : ""
               }`}
+              whileHover={{ x: 4 }}
             >
               <div className="flex items-center gap-3">
                 <span className={item.danger ? "text-destructive" : item.highlight ? "text-primary" : "text-muted-foreground"}>
@@ -175,12 +199,21 @@ const Profile = () => {
               {item.chevron && (
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />
               )}
-            </button>
+            </motion.button>
           ))}
         </motion.div>
       </main>
 
       <BottomNav />
+
+      <EditProfileModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+      />
+      <SafetyCenterModal
+        isOpen={showSafetyModal}
+        onClose={() => setShowSafetyModal(false)}
+      />
     </div>
   );
 };
