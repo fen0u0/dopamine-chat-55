@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Bell, Settings, Sparkles } from "lucide-react";
+import { Bell, Settings, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NotificationsModal from "./NotificationsModal";
 
@@ -34,11 +34,11 @@ const Header = ({ title, showLogo = true }: HeaderProps) => {
               onClick={() => navigate("/")}
               whileHover={{ scale: 1.05 }}
             >
-              <Sparkles className="w-6 h-6 text-primary" />
-              <span className="text-xl font-bold gradient-text">Spark</span>
+              <Zap className="w-6 h-6 text-primary" />
+              <span className="text-xl font-extrabold gradient-text tracking-tight">spark</span>
             </motion.div>
           ) : (
-            <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+            <h1 className="text-lg font-bold text-foreground tracking-tight lowercase">{title}</h1>
           )}
 
           <motion.button 
@@ -48,7 +48,11 @@ const Header = ({ title, showLogo = true }: HeaderProps) => {
             whileTap={{ scale: 0.9 }}
           >
             <Bell className="w-5 h-5 text-muted-foreground" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full" />
+            <motion.span 
+              className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
           </motion.button>
         </div>
       </header>

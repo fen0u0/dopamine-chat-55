@@ -14,7 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        outfit: ['Outfit', 'sans-serif'],
+        syne: ['Syne', 'sans-serif'],
+        mono: ['Space Mono', 'monospace'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -50,10 +51,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        coral: "hsl(var(--coral))",
-        pink: "hsl(var(--pink))",
-        purple: "hsl(var(--purple))",
-        "neon-pink": "hsl(var(--neon-pink))",
+        lime: "hsl(var(--lime))",
+        cyber: "hsl(var(--cyber))",
+        violet: "hsl(var(--violet))",
+        "hot-pink": "hsl(var(--hot-pink))",
+        electric: "hsl(var(--electric))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -97,6 +99,10 @@ export default {
           "50%": { transform: "scale(1)" },
           "75%": { transform: "scale(1.3)" },
         },
+        "bounce-subtle": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-5px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -105,6 +111,7 @@ export default {
         "scale-in": "scale-in 0.3s ease-out",
         "slide-up": "slide-up 0.5s ease-out",
         "heart-beat": "heart-beat 1s ease-in-out",
+        "bounce-subtle": "bounce-subtle 2s ease-in-out infinite",
       },
     },
   },

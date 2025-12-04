@@ -8,11 +8,11 @@ import {
   Briefcase,
   GraduationCap,
   Heart,
-  Camera,
   Shield,
   LogOut,
   ChevronRight,
   Gem,
+  Sparkles,
 } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
@@ -20,7 +20,6 @@ import EditProfileModal from "@/components/EditProfileModal";
 import SafetyCenterModal from "@/components/SafetyCenterModal";
 import { useGems } from "@/contexts/GemsContext";
 import { toast } from "sonner";
-import profile1 from "@/assets/profile-1.jpg";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -31,29 +30,28 @@ const Profile = () => {
   const user = {
     name: "You",
     age: 25,
-    bio: "Adventure seeker 🌍 | Coffee lover ☕ | Looking for something real",
+    bio: "living my best life ✨ | coffee addict ☕ | looking for something real fr",
     location: "New York, NY",
     job: "Product Designer",
     school: "NYU",
-    images: [profile1],
-    interests: ["Travel", "Photography", "Music", "Hiking", "Coffee"],
+    interests: ["travel", "photography", "music", "hiking", "coffee"],
   };
 
   const handleLogout = () => {
-    toast.success("Logged out successfully");
+    toast.success("logged out bestie ✌️");
   };
 
   const menuItems = [
-    { icon: <Gem className="w-5 h-5" />, label: "Get Gems", chevron: true, action: () => navigate("/settings") },
-    { icon: <Shield className="w-5 h-5" />, label: "Safety Center", chevron: true, action: () => setShowSafetyModal(true) },
-    { icon: <Settings className="w-5 h-5" />, label: "Settings", chevron: true, action: () => navigate("/settings") },
-    { icon: <Heart className="w-5 h-5" />, label: "Get Premium", highlight: true, action: () => navigate("/settings") },
-    { icon: <LogOut className="w-5 h-5" />, label: "Log Out", danger: true, action: handleLogout },
+    { icon: <Gem className="w-5 h-5" />, label: "get gems", chevron: true, action: () => navigate("/settings") },
+    { icon: <Shield className="w-5 h-5" />, label: "safety center", chevron: true, action: () => setShowSafetyModal(true) },
+    { icon: <Settings className="w-5 h-5" />, label: "settings", chevron: true, action: () => navigate("/settings") },
+    { icon: <Heart className="w-5 h-5" />, label: "go premium ✨", highlight: true, action: () => navigate("/settings") },
+    { icon: <LogOut className="w-5 h-5" />, label: "log out", danger: true, action: handleLogout },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Profile" showLogo={false} />
+      <Header title="profile" showLogo={false} />
 
       <main className="pt-20 pb-24 px-4 max-w-lg mx-auto">
         {/* Profile Card */}
@@ -62,44 +60,43 @@ const Profile = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="relative rounded-3xl overflow-hidden">
-            <img
-              src={user.images[0]}
-              alt={user.name}
-              className="w-full h-80 object-cover"
+          <div className="relative rounded-3xl overflow-hidden glass p-8">
+            {/* Background Effect */}
+            <div className="absolute inset-0 opacity-30" 
+              style={{ 
+                backgroundImage: 'radial-gradient(circle at 30% 20%, hsl(var(--cyber) / 0.4) 0%, transparent 50%), radial-gradient(circle at 70% 80%, hsl(var(--violet) / 0.4) 0%, transparent 50%)'
+              }} 
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
             
-            {/* Camera Button */}
-            <motion.button 
-              className="absolute top-4 right-4 w-10 h-10 rounded-full glass flex items-center justify-center"
-              onClick={() => setShowEditModal(true)}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <Camera className="w-5 h-5 text-foreground" />
-            </motion.button>
+            <div className="relative flex flex-col items-center">
+              {/* Avatar */}
+              <motion.div 
+                className="w-28 h-28 rounded-full gradient-border flex items-center justify-center bg-card mb-4"
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <span className="text-4xl font-extrabold gradient-text">
+                  {user.name.slice(0, 2).toUpperCase()}
+                </span>
+              </motion.div>
 
-            {/* Profile Info */}
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground">
-                    {user.name}, {user.age}
-                  </h1>
-                  <div className="flex items-center gap-1 text-muted-foreground mt-1">
-                    <MapPin className="w-4 h-4" />
-                    <span className="text-sm">{user.location}</span>
-                  </div>
-                </div>
-                <motion.button 
-                  className="w-12 h-12 rounded-full bg-primary flex items-center justify-center"
-                  onClick={() => setShowEditModal(true)}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <Edit2 className="w-5 h-5 text-primary-foreground" />
-                </motion.button>
+              {/* Edit Button */}
+              <motion.button 
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary flex items-center justify-center border border-foreground/10"
+                onClick={() => setShowEditModal(true)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Edit2 className="w-4 h-4 text-foreground" />
+              </motion.button>
+
+              {/* Profile Info */}
+              <h1 className="text-3xl font-extrabold text-foreground tracking-tight mb-1">
+                {user.name}, {user.age}
+              </h1>
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <MapPin className="w-4 h-4" />
+                <span className="text-sm font-mono">{user.location}</span>
               </div>
             </div>
           </div>
@@ -107,64 +104,67 @@ const Profile = () => {
 
         {/* Stats */}
         <motion.div
-          className="grid grid-cols-3 gap-4 mb-6"
+          className="grid grid-cols-3 gap-3 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-        {[
-            { label: "Gems", value: gems.toString(), isGems: true },
-            { label: "Matches", value: "12" },
-            { label: "Likes", value: "24" },
-          ].map((stat) => (
+          {[
+            { label: "gems", value: gems.toString(), icon: "💎" },
+            { label: "matches", value: "12", icon: "🔥" },
+            { label: "likes", value: "24", icon: "💜" },
+          ].map((stat, index) => (
             <motion.div
               key={stat.label}
-              className="glass rounded-2xl p-4 text-center cursor-pointer"
-              onClick={() => stat.isGems && navigate("/settings")}
-              whileHover={{ scale: 1.02 }}
+              className="glass rounded-2xl p-4 text-center cursor-pointer card-hover"
+              onClick={() => stat.label === "gems" && navigate("/settings")}
               whileTap={{ scale: 0.98 }}
             >
-              <p className="text-2xl font-bold gradient-text">{stat.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+              <p className="text-2xl mb-1">{stat.icon}</p>
+              <p className="text-2xl font-extrabold text-foreground">{stat.value}</p>
+              <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider">{stat.label}</p>
             </motion.div>
           ))}
         </motion.div>
 
         {/* About */}
         <motion.div
-          className="glass rounded-2xl p-4 mb-6"
+          className="glass rounded-2xl p-5 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="font-semibold text-foreground mb-3">About Me</h2>
-          <p className="text-sm text-muted-foreground mb-4">{user.bio}</p>
+          <h2 className="font-bold text-foreground mb-3 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            about me
+          </h2>
+          <p className="text-sm text-foreground/80 mb-4 font-medium">{user.bio}</p>
           
           <div className="space-y-3">
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <Briefcase className="w-4 h-4" />
-              <span>{user.job}</span>
+              <span className="font-mono">{user.job}</span>
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <GraduationCap className="w-4 h-4" />
-              <span>{user.school}</span>
+              <span className="font-mono">{user.school}</span>
             </div>
           </div>
         </motion.div>
 
         {/* Interests */}
         <motion.div
-          className="glass rounded-2xl p-4 mb-6"
+          className="glass rounded-2xl p-5 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="font-semibold text-foreground mb-3">Interests</h2>
+          <h2 className="font-bold text-foreground mb-3">vibes ✨</h2>
           <div className="flex flex-wrap gap-2">
             {user.interests.map((interest) => (
               <span
                 key={interest}
-                className="px-4 py-2 rounded-full bg-secondary text-sm text-foreground"
+                className="pill"
               >
                 {interest}
               </span>
@@ -183,7 +183,7 @@ const Profile = () => {
             <motion.button
               key={item.label}
               onClick={item.action}
-              className={`w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-colors ${
+              className={`w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-all ${
                 index !== menuItems.length - 1 ? "border-b border-border" : ""
               }`}
               whileHover={{ x: 4 }}
@@ -192,7 +192,7 @@ const Profile = () => {
                 <span className={item.danger ? "text-destructive" : item.highlight ? "text-primary" : "text-muted-foreground"}>
                   {item.icon}
                 </span>
-                <span className={`font-medium ${item.danger ? "text-destructive" : item.highlight ? "text-primary" : "text-foreground"}`}>
+                <span className={`font-semibold ${item.danger ? "text-destructive" : item.highlight ? "text-primary" : "text-foreground"}`}>
                   {item.label}
                 </span>
               </div>

@@ -17,6 +17,8 @@ const ProfileBubble = ({ profile, onClick, index, size = "md", isLocked = false 
   const unlocked = isProfileUnlocked(profile.id);
   const showLock = isLocked && !unlocked;
 
+  const getInitials = (name: string) => name.slice(0, 2).toUpperCase();
+
   const sizeClasses = {
     xs: "w-16 h-16",
     sm: "w-20 h-20",
@@ -25,20 +27,20 @@ const ProfileBubble = ({ profile, onClick, index, size = "md", isLocked = false 
     xl: "w-44 h-44",
   };
 
+  const textSizeClasses = {
+    xs: "text-lg",
+    sm: "text-xl",
+    md: "text-2xl",
+    lg: "text-3xl",
+    xl: "text-4xl",
+  };
+
   const nameSizeClasses = {
     xs: "text-[9px]",
     sm: "text-[10px]",
     md: "text-xs",
     lg: "text-sm",
     xl: "text-base",
-  };
-
-  const ringSize = {
-    xs: "p-[2px]",
-    sm: "p-[2px]",
-    md: "p-[3px]",
-    lg: "p-[3px]",
-    xl: "p-[4px]",
   };
 
   return (
@@ -59,43 +61,41 @@ const ProfileBubble = ({ profile, onClick, index, size = "md", isLocked = false 
       <div className={cn(
         "relative rounded-full overflow-hidden",
         sizeClasses[size],
-        "ring-2 ring-transparent group-hover:ring-primary transition-all duration-300",
-        "shadow-lg group-hover:shadow-glow"
+        "transition-all duration-300",
+        "group-hover:shadow-neon"
       )}>
         {/* Gradient ring */}
-        <div className={cn(
-          "absolute inset-0 rounded-full bg-gradient-to-br from-coral via-pink to-purple",
-          ringSize[size]
-        )}>
-          <div className="w-full h-full rounded-full overflow-hidden bg-background relative">
-            <img
-              src={profile.images[0]}
-              alt={profile.name}
-              className={cn(
-                "w-full h-full object-cover transition-all duration-300",
-                showLock && "blur-md brightness-50"
-              )}
-              draggable={false}
-            />
+        <div className="absolute inset-0 rounded-full gradient-border">
+          <div className={cn(
+            "w-full h-full rounded-full bg-card flex items-center justify-center relative",
+            showLock && "opacity-50"
+          )}>
+            {/* Text Avatar */}
+            <span className={cn(
+              "font-extrabold gradient-text",
+              textSizeClasses[size]
+            )}>
+              {showLock ? "??" : getInitials(profile.name)}
+            </span>
             
             {/* Lock Overlay */}
             {showLock && (
               <motion.div 
-                className="absolute inset-0 flex flex-col items-center justify-center"
+                className="absolute inset-0 flex flex-col items-center justify-center bg-background/60"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
                 <Lock className={cn(
-                  "text-white mb-1",
+                  "text-foreground mb-1",
                   size === "xl" || size === "lg" ? "w-8 h-8" : "w-5 h-5"
                 )} />
                 <div className="flex items-center gap-0.5">
                   <Gem className={cn(
-                    "text-purple-400",
+                    "text-violet",
                     size === "xl" || size === "lg" ? "w-4 h-4" : "w-3 h-3"
                   )} />
                   <span className={cn(
-                    "text-white font-bold",
+                    "text-foreground font-bold",
                     size === "xl" || size === "lg" ? "text-sm" : "text-xs"
                   )}>10</span>
                 </div>
@@ -108,7 +108,7 @@ const ProfileBubble = ({ profile, onClick, index, size = "md", isLocked = false 
         {profile.isOnline && !showLock && (
           <motion.div 
             className={cn(
-              "absolute rounded-full bg-green-500 border-2 border-background",
+              "absolute rounded-full bg-primary border-2 border-background",
               size === "xl" || size === "lg" ? "bottom-2 right-2 w-4 h-4" : "bottom-1 right-1 w-3 h-3"
             )}
             animate={{ scale: [1, 1.2, 1] }}
@@ -124,22 +124,22 @@ const ProfileBubble = ({ profile, onClick, index, size = "md", isLocked = false 
             animate={{ scale: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <span className="text-[10px]">✓</span>
+            <span className="text-[10px] text-primary-foreground">✓</span>
           </motion.div>
         )}
       </div>
       
       <div className="text-center">
         <p className={cn(
-          "font-semibold text-foreground truncate",
+          "font-bold text-foreground truncate tracking-tight",
           nameSizeClasses[size],
           size === "xl" ? "max-w-[160px]" : size === "lg" ? "max-w-[130px]" : "max-w-[80px]"
         )}>
           {showLock ? "???" : `${profile.name}, ${profile.age}`}
         </p>
         {(size === "xl" || size === "lg") && !showLock && (
-          <p className="text-[10px] text-muted-foreground truncate max-w-[100px]">
-            {profile.bio.slice(0, 20)}...
+          <p className="text-[10px] text-muted-foreground truncate max-w-[100px] font-mono">
+            {profile.distance}
           </p>
         )}
       </div>
