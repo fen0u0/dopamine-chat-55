@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import ProfileBubble from "@/components/ProfileBubble";
@@ -12,8 +12,17 @@ import BottomNav from "@/components/BottomNav";
 import GemsBadge from "@/components/GemsBadge";
 import { profiles } from "@/data/profiles";
 import { Profile } from "@/types/profile";
-import { Sparkles, Shuffle, Filter, Flame, Gift, Rocket, Clock } from "lucide-react";
+import { Sparkles, Shuffle, Filter, Flame, Gift, Rocket, Clock, SlidersHorizontal } from "lucide-react";
 import { useGems } from "@/contexts/GemsContext";
+import { toast } from "sonner";
+
+const categories = [
+  { id: "all", label: "All" },
+  { id: "hot", label: "🔥 Hot" },
+  { id: "new", label: "✨ New" },
+  { id: "premium", label: "💎 Premium" },
+  { id: "near", label: "🎯 Near" },
+];
 
 const Discover = () => {
   const navigate = useNavigate();
@@ -27,10 +36,27 @@ const Discover = () => {
   const [showMatch, setShowMatch] = useState(false);
   const [likedProfiles, setLikedProfiles] = useState<string[]>([]);
   const [shuffleKey, setShuffleKey] = useState(0);
+  const [activeCategory, setActiveCategory] = useState("all");
 
   const boostTimeRemaining = isBoostActive
     ? Math.ceil((boostEndTime! - Date.now()) / 60000)
     : 0;
+
+  // Filter profiles based on category
+  const filteredProfiles = useMemo(() => {
+    switch (activeCategory) {
+      case "hot":
+        return profiles.filter((p) => p.isOnline);
+      case "new":
+        return profiles.slice().reverse().slice(0, 6);
+      case "premium":
+        return profiles.filter((_, i) => i % 3 === 0);
+      case "near":
+        return profiles.filter((p) => parseInt(p.distance) <= 3);
+      default:
+        return profiles;
+    }
+  }, [activeCategory]);
 
   // Show daily rewards modal on first load if can claim
   useEffect(() => {
@@ -106,6 +132,19 @@ const Discover = () => {
 
   const handleShuffle = () => {
     setShuffleKey((prev) => prev + 1);
+    toast.success("Profiles shuffled! ✨");
+  };
+
+  const handleCategoryChange = (categoryId: string) => {
+    setActiveCategory(categoryId);
+    const category = categories.find((c) => c.id === categoryId);
+    if (category && categoryId !== "all") {
+      toast.info(`Showing ${category.label} profiles`);
+    }
+  };
+
+  const handleFilterClick = () => {
+    toast.info("Filter settings coming soon!");
   };
 
   // Varied sizes for visual interest - bigger bubbles
@@ -130,11 +169,19 @@ const Discover = () => {
               <Flame className="w-6 h-6 text-primary" />
               Discover
             </h1>
-            <p className="text-sm text-muted-foreground">{profiles.length} people nearby</p>
+            <p className="text-sm text-muted-foreground">{filteredProfiles.length} people nearby</p>
           </div>
           
           <div className="flex items-center gap-2">
             <GemsBadge />
+            <motion.button
+              onClick={handleFilterClick}
+              className="w-10 h-10 rounded-full glass flex items-center justify-center"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <SlidersHorizontal className="w-5 h-5 text-foreground" />
+            </motion.button>
             <motion.button
               onClick={handleShuffle}
               className="w-10 h-10 rounded-full glass flex items-center justify-center"
@@ -200,18 +247,19 @@ const Discover = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
         >
-          {["All", "🔥 Hot", "✨ New", "💎 Premium", "🎯 Near"].map((cat, i) => (
+          {categories.map((cat) => (
             <motion.button
-              key={cat}
+              key={cat.id}
+              onClick={() => handleCategoryChange(cat.id)}
               className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
-                i === 0 
+                activeCategory === cat.id 
                   ? "bg-primary text-primary-foreground" 
                   : "glass text-foreground hover:bg-primary/20"
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              {cat}
+              {cat.label}
             </motion.button>
           ))}
         </motion.div>
@@ -231,7 +279,7 @@ const Discover = () => {
           </div>
           
           <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-            {profiles.slice(0, 4).map((profile, index) => (
+            {filteredProfiles.slice(0, 4).map((profile, index) => (
               <motion.div
                 key={`featured-${profile.id}`}
                 initial={{ opacity: 0, scale: 0.8 }}
@@ -262,10 +310,10 @@ const Discover = () => {
           </h2>
           
           <motion.div 
-            key={shuffleKey}
+            key={`${shuffleKey}-${activeCategory}`}
             className="flex flex-wrap justify-center gap-4"
           >
-            {profiles.map((profile, index) => (
+            {filteredProfiles.map((profile, index) => (
               <ProfileBubble
                 key={profile.id}
                 profile={profile}
@@ -279,7 +327,7 @@ const Discover = () => {
         </motion.div>
 
         {/* Empty State */}
-        {profiles.length === 0 && (
+        {filteredProfiles.length === 0 && (
           <motion.div
             className="flex flex-col items-center justify-center h-[50vh] text-center"
             initial={{ opacity: 0, scale: 0.9 }}

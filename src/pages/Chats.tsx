@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Search, Sparkles } from "lucide-react";
+import { Search, Sparkles, X } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import ChatListItem from "@/components/ChatListItem";
@@ -14,6 +14,10 @@ const Chats = () => {
   const filteredMatches = matches.filter((match) =>
     match.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -32,8 +36,20 @@ const Chats = () => {
             placeholder="Search matches..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            className="w-full pl-12 pr-10 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
           />
+          {searchQuery && (
+            <motion.button
+              onClick={clearSearch}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-muted-foreground/20 flex items-center justify-center"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <X className="w-3 h-3 text-muted-foreground" />
+            </motion.button>
+          )}
         </motion.div>
 
         {/* New Matches Section */}
@@ -68,6 +84,15 @@ const Chats = () => {
                   </div>
                   {match.isOnline && (
                     <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-background" />
+                  )}
+                  {match.unreadCount && match.unreadCount > 0 && (
+                    <motion.div 
+                      className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                    >
+                      <span className="text-[10px] font-bold text-primary-foreground">{match.unreadCount}</span>
+                    </motion.div>
                   )}
                 </div>
                 <span className="text-xs text-foreground mt-2 font-medium">
@@ -105,10 +130,10 @@ const Chats = () => {
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                No messages yet
+                {searchQuery ? "No matches found" : "No messages yet"}
               </h3>
               <p className="text-sm text-muted-foreground">
-                Start swiping to find your match!
+                {searchQuery ? "Try a different search" : "Start swiping to find your match!"}
               </p>
             </div>
           )}
