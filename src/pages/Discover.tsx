@@ -12,16 +12,16 @@ import BottomNav from "@/components/BottomNav";
 import GemsBadge from "@/components/GemsBadge";
 import { profiles } from "@/data/profiles";
 import { Profile } from "@/types/profile";
-import { Sparkles, Shuffle, Filter, Flame, Gift, Rocket, Clock, SlidersHorizontal } from "lucide-react";
+import { Sparkles, Shuffle, Filter, Zap, Gift, Rocket, Clock, SlidersHorizontal } from "lucide-react";
 import { useGems } from "@/contexts/GemsContext";
 import { toast } from "sonner";
 
 const categories = [
-  { id: "all", label: "All" },
-  { id: "hot", label: "🔥 Hot" },
-  { id: "new", label: "✨ New" },
-  { id: "premium", label: "💎 Premium" },
-  { id: "near", label: "🎯 Near" },
+  { id: "all", label: "all" },
+  { id: "hot", label: "🔥 hot" },
+  { id: "new", label: "✨ new" },
+  { id: "premium", label: "💎 premium" },
+  { id: "near", label: "🎯 near" },
 ];
 
 const Discover = () => {
@@ -132,19 +132,19 @@ const Discover = () => {
 
   const handleShuffle = () => {
     setShuffleKey((prev) => prev + 1);
-    toast.success("Profiles shuffled! ✨");
+    toast.success("shuffled! let's gooo ✨");
   };
 
   const handleCategoryChange = (categoryId: string) => {
     setActiveCategory(categoryId);
     const category = categories.find((c) => c.id === categoryId);
     if (category && categoryId !== "all") {
-      toast.info(`Showing ${category.label} profiles`);
+      toast.info(`showing ${category.label} profiles`);
     }
   };
 
   const handleFilterClick = () => {
-    toast.info("Filter settings coming soon!");
+    toast.info("filters coming soon bestie!");
   };
 
   // Varied sizes for visual interest - bigger bubbles
@@ -165,11 +165,11 @@ const Discover = () => {
           animate={{ opacity: 1, y: 0 }}
         >
           <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-              <Flame className="w-6 h-6 text-primary" />
-              Discover
+            <h1 className="text-2xl font-extrabold text-foreground flex items-center gap-2 tracking-tight">
+              <Zap className="w-6 h-6 text-primary" />
+              discover
             </h1>
-            <p className="text-sm text-muted-foreground">{filteredProfiles.length} people nearby</p>
+            <p className="text-sm text-muted-foreground font-mono">{filteredProfiles.length} ppl nearby</p>
           </div>
           
           <div className="flex items-center gap-2">
@@ -205,21 +205,21 @@ const Discover = () => {
           {canClaimDaily && (
             <motion.button
               onClick={() => setShowDailyRewards(true)}
-              className="flex-1 glass rounded-2xl p-3 flex items-center gap-3 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30"
+              className="flex-1 glass rounded-2xl p-3 flex items-center gap-3 bg-gradient-to-r from-accent/20 to-primary/20 border border-accent/30"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               animate={{ scale: [1, 1.02, 1] }}
               transition={{ repeat: Infinity, duration: 2 }}
             >
-              <Gift className="w-6 h-6 text-amber-500" />
-              <span className="text-sm font-medium text-foreground">Claim Daily Reward!</span>
+              <Gift className="w-6 h-6 text-accent" />
+              <span className="text-sm font-bold text-foreground">claim daily reward!</span>
             </motion.button>
           )}
 
           {/* Boost Active Banner */}
           {isBoostActive && (
             <motion.div
-              className="flex-1 glass rounded-2xl p-3 flex items-center gap-3 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30"
+              className="flex-1 glass rounded-2xl p-3 flex items-center gap-3 bg-gradient-to-r from-violet/20 to-electric/20 border border-violet/30"
               animate={{ opacity: [0.8, 1, 0.8] }}
               transition={{ repeat: Infinity, duration: 1.5 }}
             >
@@ -227,11 +227,11 @@ const Discover = () => {
                 animate={{ rotate: 360 }}
                 transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
               >
-                <Rocket className="w-6 h-6 text-blue-400" />
+                <Rocket className="w-6 h-6 text-violet" />
               </motion.div>
               <div className="flex-1">
-                <span className="text-sm font-medium text-foreground">Boost Active</span>
-                <div className="flex items-center gap-1 text-xs text-blue-400">
+                <span className="text-sm font-bold text-foreground">boost active 🚀</span>
+                <div className="flex items-center gap-1 text-xs text-violet font-mono">
                   <Clock className="w-3 h-3" />
                   <span>{boostTimeRemaining}m left</span>
                 </div>
@@ -251,10 +251,8 @@ const Discover = () => {
             <motion.button
               key={cat.id}
               onClick={() => handleCategoryChange(cat.id)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all ${
-                activeCategory === cat.id 
-                  ? "bg-primary text-primary-foreground" 
-                  : "glass text-foreground hover:bg-primary/20"
+              className={`pill whitespace-nowrap ${
+                activeCategory === cat.id ? "active" : ""
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -272,9 +270,9 @@ const Discover = () => {
           transition={{ delay: 0.15 }}
         >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-400" />
-              Featured Today
+            <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-accent" />
+              featured today
             </h2>
           </div>
           
@@ -304,9 +302,9 @@ const Discover = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Filter className="w-5 h-5 text-muted-foreground" />
-            Explore
+          <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
+            <Filter className="w-4 h-4" />
+            explore
           </h2>
           
           <motion.div 
@@ -333,14 +331,14 @@ const Discover = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
           >
-            <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-4">
+            <div className="w-20 h-20 rounded-full gradient-border flex items-center justify-center bg-card mb-4">
               <Sparkles className="w-10 h-10 text-primary" />
             </div>
             <h2 className="text-xl font-bold text-foreground mb-2">
-              No one nearby
+              no one nearby rn 💀
             </h2>
             <p className="text-muted-foreground">
-              Check back later for new people
+              check back later bestie
             </p>
           </motion.div>
         )}

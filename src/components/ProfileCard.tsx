@@ -1,5 +1,5 @@
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import { MapPin, Info } from "lucide-react";
+import { MapPin, Sparkles } from "lucide-react";
 import { Profile } from "@/types/profile";
 import { cn } from "@/lib/utils";
 
@@ -25,10 +25,12 @@ const ProfileCard = ({ profile, onSwipe, isTop = false }: ProfileCardProps) => {
     }
   };
 
+  const getInitials = (name: string) => name.slice(0, 2).toUpperCase();
+
   return (
     <motion.div
       className={cn(
-        "swipe-card cursor-grab active:cursor-grabbing",
+        "swipe-card cursor-grab active:cursor-grabbing card-hover",
         "top-0 h-[70vh] max-h-[600px]"
       )}
       style={{ x, rotate, opacity }}
@@ -39,65 +41,74 @@ const ProfileCard = ({ profile, onSwipe, isTop = false }: ProfileCardProps) => {
       animate={{ scale: isTop ? 1 : 0.95, y: isTop ? 0 : 20 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
-      {/* Background Image */}
-      <div className="absolute inset-0">
-        <img
-          src={profile.images[0]}
-          alt={profile.name}
-          className="w-full h-full object-cover"
-          draggable={false}
+      {/* Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-card via-secondary to-card">
+        <div className="absolute inset-0 opacity-30" 
+          style={{ 
+            backgroundImage: 'radial-gradient(circle at 20% 30%, hsl(var(--cyber) / 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 70%, hsl(var(--violet) / 0.3) 0%, transparent 50%)'
+          }} 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
       </div>
 
       {/* Like/Nope Indicators */}
       {isTop && (
         <>
           <motion.div
-            className="absolute top-8 left-6 px-4 py-2 rounded-lg border-4 border-green-500 rotate-[-20deg]"
+            className="absolute top-8 left-6 px-5 py-2 rounded-xl border-4 border-primary rotate-[-20deg] bg-background/50 backdrop-blur-sm"
             style={{ opacity: likeOpacity }}
           >
-            <span className="text-2xl font-bold text-green-500">LIKE</span>
+            <span className="text-2xl font-extrabold text-primary tracking-tight">VIBE ✨</span>
           </motion.div>
           <motion.div
-            className="absolute top-8 right-6 px-4 py-2 rounded-lg border-4 border-red-500 rotate-[20deg]"
+            className="absolute top-8 right-6 px-5 py-2 rounded-xl border-4 border-destructive rotate-[20deg] bg-background/50 backdrop-blur-sm"
             style={{ opacity: nopeOpacity }}
           >
-            <span className="text-2xl font-bold text-red-500">NOPE</span>
+            <span className="text-2xl font-extrabold text-destructive tracking-tight">NEXT 💀</span>
           </motion.div>
         </>
       )}
 
-      {/* Profile Info */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 space-y-3">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="text-3xl font-bold text-foreground">
-              {profile.name}, {profile.age}
-            </h2>
-            <div className="flex items-center gap-1 text-muted-foreground mt-1">
-              <MapPin className="w-4 h-4" />
-              <span className="text-sm">{profile.distance}</span>
-            </div>
-          </div>
-          <button className="w-10 h-10 rounded-full glass flex items-center justify-center">
-            <Info className="w-5 h-5 text-foreground" />
-          </button>
-        </div>
+      {/* Profile Content */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+        {/* Avatar */}
+        <motion.div 
+          className="w-32 h-32 rounded-full gradient-border flex items-center justify-center bg-card mb-6"
+          animate={{ scale: [1, 1.02, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <span className="text-5xl font-extrabold gradient-text">
+            {getInitials(profile.name)}
+          </span>
+        </motion.div>
 
-        <p className="text-sm text-muted-foreground line-clamp-2">{profile.bio}</p>
+        {/* Name */}
+        <h2 className="text-4xl font-extrabold text-foreground tracking-tight mb-2">
+          {profile.name}
+        </h2>
+        <p className="text-xl font-mono text-muted-foreground mb-4">
+          {profile.age} • {profile.distance}
+        </p>
 
-        <div className="flex flex-wrap gap-2">
-          {profile.interests.slice(0, 3).map((interest) => (
+        {/* Bio */}
+        <p className="text-center text-foreground/80 font-medium text-lg mb-6 max-w-xs">
+          {profile.bio}
+        </p>
+
+        {/* Interests */}
+        <div className="flex flex-wrap gap-2 justify-center">
+          {profile.interests.slice(0, 4).map((interest) => (
             <span
               key={interest}
-              className="px-3 py-1 rounded-full text-xs font-medium glass text-foreground"
+              className="pill"
             >
               {interest}
             </span>
           ))}
         </div>
       </div>
+
+      {/* Bottom Gradient */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background/80 to-transparent" />
     </motion.div>
   );
 };

@@ -19,9 +19,11 @@ const Chats = () => {
     setSearchQuery("");
   };
 
+  const getInitials = (name: string) => name.slice(0, 2).toUpperCase();
+
   return (
     <div className="min-h-screen bg-background">
-      <Header title="Messages" showLogo={false} />
+      <Header title="messages" showLogo={false} />
 
       <main className="pt-20 pb-24 px-4 max-w-lg mx-auto">
         {/* Search */}
@@ -33,10 +35,10 @@ const Chats = () => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search matches..."
+            placeholder="find ur people..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-10 py-3 rounded-xl bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+            className="w-full pl-12 pr-10 py-3 rounded-xl bg-secondary border border-foreground/5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
           />
           {searchQuery && (
             <motion.button
@@ -59,14 +61,14 @@ const Chats = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-            New Matches
+          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">
+            new vibes ✨
           </h2>
           <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
             {matches.slice(0, 4).map((match, index) => (
               <motion.button
                 key={match.id}
-                className="flex-shrink-0 flex flex-col items-center"
+                className="flex-shrink-0 flex flex-col items-center group"
                 onClick={() => navigate(`/chat/${match.id}`)}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -75,27 +77,25 @@ const Chats = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-full overflow-hidden gradient-border">
-                    <img
-                      src={match.images[0]}
-                      alt={match.name}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-16 h-16 rounded-full gradient-border flex items-center justify-center bg-card group-hover:scale-105 transition-transform">
+                    <span className="text-xl font-bold gradient-text">
+                      {getInitials(match.name)}
+                    </span>
                   </div>
                   {match.isOnline && (
-                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-background" />
+                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-primary rounded-full border-2 border-background animate-pulse" />
                   )}
                   {match.unreadCount && match.unreadCount > 0 && (
                     <motion.div 
-                      className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center"
+                      className="absolute -top-1 -right-1 w-5 h-5 bg-violet rounded-full flex items-center justify-center"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                     >
-                      <span className="text-[10px] font-bold text-primary-foreground">{match.unreadCount}</span>
+                      <span className="text-[10px] font-bold text-foreground">{match.unreadCount}</span>
                     </motion.div>
                   )}
                 </div>
-                <span className="text-xs text-foreground mt-2 font-medium">
+                <span className="text-xs text-foreground mt-2 font-semibold tracking-tight">
                   {match.name}
                 </span>
               </motion.button>
@@ -109,8 +109,8 @@ const Chats = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
-            Messages
+          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">
+            convos 💬
           </h2>
 
           {filteredMatches.length > 0 ? (
@@ -126,14 +126,14 @@ const Chats = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
+              <div className="w-20 h-20 rounded-full gradient-border flex items-center justify-center bg-card mb-4">
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                {searchQuery ? "No matches found" : "No messages yet"}
+              <h3 className="text-xl font-bold text-foreground mb-2">
+                {searchQuery ? "no matches found 💀" : "no msgs yet"}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {searchQuery ? "Try a different search" : "Start swiping to find your match!"}
+                {searchQuery ? "try again bestie" : "start swiping to find ur people!"}
               </p>
             </div>
           )}

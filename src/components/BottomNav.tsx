@@ -19,9 +19,9 @@ const BottomNav = () => {
   const unreadCount = matches.reduce((acc, m) => acc + (m.unreadCount || 0), 0);
 
   const navItems: NavItem[] = [
-    { icon: <Flame className="w-6 h-6" />, label: "Discover", path: "/" },
-    { icon: <MessageCircle className="w-6 h-6" />, label: "Chats", path: "/chats", badge: unreadCount },
-    { icon: <User className="w-6 h-6" />, label: "Profile", path: "/profile" },
+    { icon: <Flame className="w-6 h-6" />, label: "discover", path: "/" },
+    { icon: <MessageCircle className="w-6 h-6" />, label: "chats", path: "/chats", badge: unreadCount },
+    { icon: <User className="w-6 h-6" />, label: "profile", path: "/profile" },
   ];
 
   return (
@@ -53,10 +53,10 @@ const BottomNav = () => {
                   </motion.span>
                 )}
               </div>
-              <span className="text-xs mt-1">{item.label}</span>
+              <span className="text-xs mt-1 font-semibold tracking-tight">{item.label}</span>
               {isActive && (
                 <motion.div
-                  className="absolute -bottom-3 left-1/2 w-1 h-1 bg-primary rounded-full"
+                  className="absolute -bottom-3 left-1/2 w-1.5 h-1.5 bg-primary rounded-full"
                   layoutId="nav-indicator"
                   style={{ x: "-50%" }}
                 />
