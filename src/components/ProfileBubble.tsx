@@ -1,8 +1,7 @@
 import { motion } from "framer-motion";
+import { Lock, Sparkles } from "lucide-react";
 import { Profile } from "@/types/profile";
 import { cn } from "@/lib/utils";
-import { Lock, Gem } from "lucide-react";
-import { useGems } from "@/contexts/GemsContext";
 
 interface ProfileBubbleProps {
   profile: Profile;
@@ -12,135 +11,81 @@ interface ProfileBubbleProps {
   isLocked?: boolean;
 }
 
-const ProfileBubble = ({ profile, onClick, index, size = "md", isLocked = false }: ProfileBubbleProps) => {
-  const { isProfileUnlocked } = useGems();
-  const unlocked = isProfileUnlocked(profile.id);
-  const showLock = isLocked && !unlocked;
+const sizeClasses = {
+  xs: "w-12 h-12 text-sm",
+  sm: "w-14 h-14 text-base",
+  md: "w-16 h-16 text-lg",
+  lg: "w-20 h-20 text-xl",
+  xl: "w-24 h-24 text-2xl",
+};
 
+const ProfileBubble = ({ 
+  profile, 
+  onClick, 
+  index, 
+  size = "md",
+  isLocked = false 
+}: ProfileBubbleProps) => {
   const getInitials = (name: string) => name.slice(0, 2).toUpperCase();
-
-  const sizeClasses = {
-    xs: "w-16 h-16",
-    sm: "w-20 h-20",
-    md: "w-28 h-28",
-    lg: "w-36 h-36",
-    xl: "w-44 h-44",
-  };
-
-  const textSizeClasses = {
-    xs: "text-lg",
-    sm: "text-xl",
-    md: "text-2xl",
-    lg: "text-3xl",
-    xl: "text-4xl",
-  };
-
-  const nameSizeClasses = {
-    xs: "text-[9px]",
-    sm: "text-[10px]",
-    md: "text-xs",
-    lg: "text-sm",
-    xl: "text-base",
-  };
 
   return (
     <motion.button
       onClick={onClick}
-      className="flex flex-col items-center gap-2 group"
-      initial={{ opacity: 0, scale: 0, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ 
-        delay: index * 0.04, 
-        type: "spring", 
-        stiffness: 400, 
-        damping: 20 
-      }}
+      className="relative flex flex-col items-center gap-2 group"
+      initial={{ opacity: 0, scale: 0 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: index * 0.05, type: "spring", stiffness: 200 }}
       whileHover={{ scale: 1.08 }}
       whileTap={{ scale: 0.95 }}
     >
-      <div className={cn(
-        "relative rounded-full overflow-hidden",
-        sizeClasses[size],
-        "transition-all duration-300",
-        "group-hover:shadow-neon"
-      )}>
-        {/* Gradient ring */}
-        <div className="absolute inset-0 rounded-full gradient-border">
-          <div className={cn(
-            "w-full h-full rounded-full bg-card flex items-center justify-center relative",
-            showLock && "opacity-50"
-          )}>
-            {/* Text Avatar */}
+      <div className="relative">
+        <div 
+          className={cn(
+            "rounded-full flex items-center justify-center font-bold transition-all duration-300",
+            sizeClasses[size],
+            isLocked 
+              ? "bg-secondary border-2 border-foreground/10" 
+              : "gradient-border bg-card"
+          )}
+        >
+          {isLocked ? (
+            <Lock className="w-1/3 h-1/3 text-muted-foreground" />
+          ) : (
             <span className={cn(
-              "font-extrabold gradient-text",
-              textSizeClasses[size]
+              "gradient-text font-bold",
+              size === "xl" && "text-2xl",
+              size === "lg" && "text-xl",
+              size === "md" && "text-lg",
             )}>
-              {showLock ? "??" : getInitials(profile.name)}
+              {getInitials(profile.name)}
             </span>
-            
-            {/* Lock Overlay */}
-            {showLock && (
-              <motion.div 
-                className="absolute inset-0 flex flex-col items-center justify-center bg-background/60"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <Lock className={cn(
-                  "text-foreground mb-1",
-                  size === "xl" || size === "lg" ? "w-8 h-8" : "w-5 h-5"
-                )} />
-                <div className="flex items-center gap-0.5">
-                  <Gem className={cn(
-                    "text-violet",
-                    size === "xl" || size === "lg" ? "w-4 h-4" : "w-3 h-3"
-                  )} />
-                  <span className={cn(
-                    "text-foreground font-bold",
-                    size === "xl" || size === "lg" ? "text-sm" : "text-xs"
-                  )}>10</span>
-                </div>
-              </motion.div>
-            )}
-          </div>
+          )}
         </div>
-        
-        {/* Online indicator */}
-        {profile.isOnline && !showLock && (
+
+        {profile.isOnline && !isLocked && (
           <motion.div 
-            className={cn(
-              "absolute rounded-full bg-primary border-2 border-background",
-              size === "xl" || size === "lg" ? "bottom-2 right-2 w-4 h-4" : "bottom-1 right-1 w-3 h-3"
-            )}
+            className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background"
             animate={{ scale: [1, 1.2, 1] }}
-            transition={{ repeat: Infinity, duration: 2 }}
+            transition={{ duration: 2, repeat: Infinity }}
           />
         )}
 
-        {/* Verified badge for large profiles */}
-        {(size === "xl" || size === "lg") && profile.verified && !showLock && (
-          <motion.div 
-            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <span className="text-[10px] text-primary-foreground">✓</span>
-          </motion.div>
+        {profile.verified && !isLocked && (
+          <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+            <Sparkles className="w-3 h-3 text-primary-foreground" />
+          </div>
         )}
       </div>
-      
+
       <div className="text-center">
         <p className={cn(
-          "font-bold text-foreground truncate tracking-tight",
-          nameSizeClasses[size],
-          size === "xl" ? "max-w-[160px]" : size === "lg" ? "max-w-[130px]" : "max-w-[80px]"
+          "font-medium text-foreground leading-tight",
+          size === "xl" || size === "lg" ? "text-sm" : "text-xs"
         )}>
-          {showLock ? "???" : `${profile.name}, ${profile.age}`}
+          {isLocked ? "???" : profile.name}
         </p>
-        {(size === "xl" || size === "lg") && !showLock && (
-          <p className="text-[10px] text-muted-foreground truncate max-w-[100px] font-mono">
-            {profile.distance}
-          </p>
+        {(size === "xl" || size === "lg") && !isLocked && (
+          <p className="text-xs text-muted-foreground">{profile.age}</p>
         )}
       </div>
     </motion.button>

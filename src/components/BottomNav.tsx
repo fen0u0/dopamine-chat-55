@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Flame, MessageCircle, User } from "lucide-react";
+import { Heart, MessageCircle, User } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { matches } from "@/data/profiles";
@@ -15,18 +15,17 @@ const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Calculate unread count from matches
   const unreadCount = matches.reduce((acc, m) => acc + (m.unreadCount || 0), 0);
 
   const navItems: NavItem[] = [
-    { icon: <Flame className="w-6 h-6" />, label: "discover", path: "/" },
+    { icon: <Heart className="w-6 h-6" />, label: "home", path: "/" },
     { icon: <MessageCircle className="w-6 h-6" />, label: "chats", path: "/chats", badge: unreadCount },
     { icon: <User className="w-6 h-6" />, label: "profile", path: "/profile" },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 glass border-t border-border z-40">
-      <div className="flex items-center justify-around py-3 px-4 max-w-lg mx-auto">
+      <div className="flex items-center justify-around py-3 px-4 max-w-2xl mx-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -34,7 +33,7 @@ const BottomNav = () => {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                "nav-item relative px-4 py-1",
+                "nav-item relative px-6 py-1",
                 isActive && "active"
               )}
               whileHover={{ scale: 1.05 }}
@@ -53,10 +52,10 @@ const BottomNav = () => {
                   </motion.span>
                 )}
               </div>
-              <span className="text-xs mt-1 font-semibold tracking-tight">{item.label}</span>
+              <span className="text-xs mt-1 font-medium">{item.label}</span>
               {isActive && (
                 <motion.div
-                  className="absolute -bottom-3 left-1/2 w-1.5 h-1.5 bg-primary rounded-full"
+                  className="absolute -bottom-3 left-1/2 w-1 h-1 bg-primary rounded-full"
                   layoutId="nav-indicator"
                   style={{ x: "-50%" }}
                 />
