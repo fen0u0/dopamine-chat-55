@@ -13,9 +13,7 @@ import {
   ChevronRight,
   Gem,
   Sparkles,
-  Wine,
-  Cigarette,
-  Dumbbell,
+  Coffee,
   Moon,
   Dog,
   Music,
@@ -24,7 +22,10 @@ import {
   Gamepad2,
   BookOpen,
   Camera,
-  Coffee,
+  Dumbbell,
+  Users,
+  MessageCircle,
+  Zap,
 } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
@@ -42,7 +43,7 @@ const Profile = () => {
   const user = {
     name: "You",
     age: 25,
-    bio: "living my best life ✨ | looking for something real, not here to play games",
+    bio: "always down for new experiences ✨ | love meeting cool people | let's grab coffee or something",
     location: "New York, NY",
     job: "Product Designer",
     school: "NYU",
@@ -50,17 +51,17 @@ const Profile = () => {
   };
 
   const profileDetails = [
-    { icon: <Wine className="w-4 h-4" />, label: "drinking", value: "socially" },
-    { icon: <Cigarette className="w-4 h-4" />, label: "smoking", value: "never" },
-    { icon: <Dumbbell className="w-4 h-4" />, label: "workout", value: "sometimes" },
-    { icon: <Moon className="w-4 h-4" />, label: "sleep schedule", value: "night owl" },
+    { icon: <Coffee className="w-4 h-4" />, label: "hangout style", value: "coffee chats" },
+    { icon: <Moon className="w-4 h-4" />, label: "availability", value: "weekends" },
+    { icon: <Dumbbell className="w-4 h-4" />, label: "activity level", value: "active" },
     { icon: <Dog className="w-4 h-4" />, label: "pets", value: "dog lover" },
+    { icon: <Zap className="w-4 h-4" />, label: "energy", value: "chill vibes" },
   ];
 
   const lookingFor = [
-    { icon: <Heart className="w-4 h-4" />, label: "relationship type", value: "long term" },
-    { icon: <Music className="w-4 h-4" />, label: "love language", value: "quality time" },
-    { icon: <Sparkles className="w-4 h-4" />, label: "communication", value: "texter" },
+    { icon: <Users className="w-4 h-4" />, label: "looking for", value: "new friends" },
+    { icon: <MessageCircle className="w-4 h-4" />, label: "communication", value: "texter" },
+    { icon: <Sparkles className="w-4 h-4" />, label: "vibe", value: "good conversations" },
   ];
 
   const passions = [
@@ -144,8 +145,8 @@ const Profile = () => {
         >
           {[
             { label: "gems", value: gems.toString(), icon: "💎" },
-            { label: "matches", value: "12", icon: "💕" },
-            { label: "likes", value: "24", icon: "✨" },
+            { label: "connections", value: "12", icon: "🤝" },
+            { label: "vibes", value: "24", icon: "✨" },
           ].map((stat) => (
             <motion.div
               key={stat.label}
@@ -193,8 +194,8 @@ const Profile = () => {
           transition={{ delay: 0.25 }}
         >
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Heart className="w-4 h-4 text-primary" />
-            what i'm looking for
+            <Users className="w-4 h-4 text-primary" />
+            what i'm here for
           </h2>
           <div className="space-y-3">
             {lookingFor.map((item) => (
@@ -216,7 +217,7 @@ const Profile = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="font-semibold text-foreground mb-4">lifestyle</h2>
+          <h2 className="font-semibold text-foreground mb-4">my vibe</h2>
           <div className="space-y-3">
             {profileDetails.map((item) => (
               <div key={item.label} className="flex items-center justify-between">
@@ -237,7 +238,7 @@ const Profile = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
         >
-          <h2 className="font-semibold text-foreground mb-3">passions</h2>
+          <h2 className="font-semibold text-foreground mb-3">interests</h2>
           <div className="flex flex-wrap gap-2">
             {passions.map((passion) => (
               <span
