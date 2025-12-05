@@ -34,9 +34,9 @@ const Index = () => {
   };
 
   const stats = [
-    { icon: "💕", label: "matches today", value: "24" },
+    { icon: "🤝", label: "connections today", value: "24" },
     { icon: "✨", label: "active now", value: "1.2k" },
-    { icon: "💫", label: "new profiles", value: "89" },
+    { icon: "🆕", label: "new people", value: "89" },
   ];
 
   return (
@@ -55,15 +55,15 @@ const Index = () => {
             animate={{ scale: [1, 1.02, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <Heart className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">finding your person</span>
+            <Users className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-primary">find your people</span>
           </motion.div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 leading-tight">
-            love is just a <span className="gradient-text">swipe</span> away
+            meet cool people <span className="gradient-text">near you</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-md mx-auto mb-8">
-            no cap, the vibes are immaculate here. find your person without the cringe.
+            no cap, the vibes are immaculate here. find your crew, make new friends, expand your circle.
           </p>
 
           <div className="flex justify-center gap-4">
@@ -73,7 +73,7 @@ const Index = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              start matching
+              start connecting
               <ArrowRight className="w-4 h-4" />
             </motion.button>
             <motion.button
@@ -138,7 +138,7 @@ const Index = () => {
           </div>
         </motion.section>
 
-        {/* Your Matches */}
+        {/* Your Connections */}
         <motion.section
           className="mb-10"
           initial={{ opacity: 0, y: 20 }}
@@ -148,7 +148,7 @@ const Index = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Heart className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-bold text-foreground">your matches</h2>
+              <h2 className="text-lg font-bold text-foreground">your connections</h2>
             </div>
             <button 
               onClick={() => navigate("/chats")}
@@ -200,7 +200,7 @@ const Index = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-coral" />
-              <h2 className="text-lg font-bold text-foreground">explore profiles</h2>
+              <h2 className="text-lg font-bold text-foreground">explore people</h2>
             </div>
           </div>
 
