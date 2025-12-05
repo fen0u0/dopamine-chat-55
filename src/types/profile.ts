@@ -3,7 +3,6 @@ export interface Profile {
   name: string;
   age: number;
   bio: string;
-  distance: string;
   images: string[];
   interests: string[];
   isOnline?: boolean;

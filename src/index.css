@@ -2,58 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @layer base {
   :root {
-    --background: 250 15% 5%;
-    --foreground: 60 10% 95%;
+    --background: 0 0% 3%;
+    --foreground: 30 20% 96%;
 
-    --card: 250 15% 8%;
-    --card-foreground: 60 10% 95%;
+    --card: 0 0% 6%;
+    --card-foreground: 30 20% 96%;
 
-    --popover: 250 15% 7%;
-    --popover-foreground: 60 10% 95%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 30 20% 96%;
 
-    --primary: 160 100% 50%;
-    --primary-foreground: 250 15% 5%;
+    --primary: 350 80% 60%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 250 20% 12%;
-    --secondary-foreground: 60 10% 95%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 30 20% 96%;
 
-    --muted: 250 15% 15%;
-    --muted-foreground: 250 10% 50%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 55%;
 
-    --accent: 45 100% 60%;
-    --accent-foreground: 250 15% 5%;
+    --accent: 30 90% 65%;
+    --accent-foreground: 0 0% 3%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 60 10% 95%;
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 30 20% 96%;
 
-    --border: 250 15% 15%;
-    --input: 250 15% 12%;
-    --ring: 160 100% 50%;
+    --border: 0 0% 12%;
+    --input: 0 0% 10%;
+    --ring: 350 80% 60%;
 
-    --radius: 1.25rem;
+    --radius: 1rem;
 
-    /* Gen Z Colors - bold, vibrant */
-    --lime: 80 100% 55%;
-    --cyber: 160 100% 50%;
-    --violet: 270 100% 65%;
-    --hot-pink: 330 100% 60%;
-    --electric: 200 100% 55%;
+    /* cupid colors - romantic, soft, warm */
+    --rose: 350 80% 60%;
+    --blush: 350 60% 75%;
+    --coral: 15 80% 65%;
+    --peach: 30 80% 70%;
+    --cream: 40 40% 90%;
+    --wine: 350 50% 35%;
+    --gold: 45 90% 55%;
     
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--cyber)), hsl(var(--lime)));
-    --gradient-vibe: linear-gradient(135deg, hsl(var(--violet)), hsl(var(--hot-pink)));
-    --gradient-card: linear-gradient(180deg, hsl(250 15% 10%), hsl(250 15% 6%));
-    --gradient-glow: radial-gradient(circle at 50% 0%, hsl(var(--cyber) / 0.15), transparent 50%);
-    --gradient-text: linear-gradient(90deg, hsl(var(--cyber)), hsl(var(--lime)), hsl(var(--accent)));
+    --gradient-primary: linear-gradient(135deg, hsl(var(--rose)), hsl(var(--coral)));
+    --gradient-soft: linear-gradient(135deg, hsl(var(--blush) / 0.3), hsl(var(--peach) / 0.3));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 8%), hsl(0 0% 5%));
+    --gradient-glow: radial-gradient(ellipse at 50% 0%, hsl(var(--rose) / 0.08), transparent 60%);
+    --gradient-text: linear-gradient(135deg, hsl(var(--rose)), hsl(var(--coral)), hsl(var(--peach)));
+    --gradient-gold: linear-gradient(135deg, hsl(var(--gold)), hsl(var(--peach)));
     
     /* Shadows */
-    --shadow-glow: 0 0 60px hsl(var(--cyber) / 0.3);
-    --shadow-card: 0 25px 80px hsl(0 0% 0% / 0.6);
-    --shadow-neon: 0 0 20px hsl(var(--cyber) / 0.5), 0 0 40px hsl(var(--cyber) / 0.3);
+    --shadow-glow: 0 0 80px hsl(var(--rose) / 0.2);
+    --shadow-card: 0 20px 60px hsl(0 0% 0% / 0.5);
+    --shadow-soft: 0 0 30px hsl(var(--rose) / 0.15);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
@@ -72,7 +75,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-syne antialiased;
+    @apply bg-background text-foreground font-outfit antialiased;
     background-image: var(--gradient-glow);
     background-attachment: fixed;
   }
@@ -80,7 +83,7 @@
 
 @layer components {
   .glass {
-    @apply bg-card/70 backdrop-blur-2xl border border-foreground/5;
+    @apply bg-card/60 backdrop-blur-xl border border-foreground/5;
   }
   
   .gradient-text {
@@ -89,12 +92,12 @@
   }
   
   .text-glow {
-    text-shadow: 0 0 30px hsl(var(--cyber) / 0.5);
+    text-shadow: 0 0 40px hsl(var(--rose) / 0.4);
   }
   
   .vibe-text {
-    @apply bg-clip-text text-transparent font-extrabold tracking-tight;
-    background-image: var(--gradient-vibe);
+    @apply bg-clip-text text-transparent font-bold tracking-tight;
+    background-image: var(--gradient-gold);
   }
   
   .gradient-border {
@@ -130,7 +133,7 @@
   
   .nav-item.active {
     @apply text-primary;
-    filter: drop-shadow(0 0 8px hsl(var(--cyber) / 0.6));
+    filter: drop-shadow(0 0 12px hsl(var(--rose) / 0.5));
   }
 
   .card-hover {
@@ -139,14 +142,14 @@
 
   .card-hover:hover {
     @apply scale-[1.02];
-    box-shadow: var(--shadow-neon);
+    box-shadow: var(--shadow-soft);
   }
 
   .text-shimmer {
     background: linear-gradient(
       90deg,
       hsl(var(--foreground)) 0%,
-      hsl(var(--cyber)) 50%,
+      hsl(var(--rose)) 50%,
       hsl(var(--foreground)) 100%
     );
     background-size: 200% auto;
@@ -157,29 +160,40 @@
   }
 
   .pill {
-    @apply px-4 py-2 rounded-full text-sm font-semibold tracking-wide uppercase;
-    @apply bg-secondary border border-foreground/10;
+    @apply px-4 py-2 rounded-full text-sm font-medium;
+    @apply bg-secondary/80 border border-foreground/5;
     @apply transition-all duration-300;
   }
 
   .pill:hover {
-    @apply bg-primary text-primary-foreground;
-    box-shadow: var(--shadow-neon);
+    @apply bg-primary/20 border-primary/30;
   }
 
   .pill.active {
     @apply bg-primary text-primary-foreground;
-    box-shadow: var(--shadow-neon);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .section-card {
+    @apply glass rounded-2xl p-5;
+  }
+
+  .stat-card {
+    @apply glass rounded-xl p-4 text-center cursor-pointer card-hover;
+  }
+
+  .menu-item {
+    @apply w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition-all;
   }
 }
 
 @layer utilities {
   .animate-float {
-    animation: float 3s ease-in-out infinite;
+    animation: float 4s ease-in-out infinite;
   }
   
   .animate-pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
+    animation: pulse-glow 3s ease-in-out infinite;
   }
   
   .animate-swipe-right {
@@ -197,16 +211,20 @@
   .animate-shimmer {
     animation: shimmer 3s linear infinite;
   }
+
+  .animate-heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+  }
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-8px); }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px hsl(var(--cyber) / 0.3); }
-  50% { box-shadow: 0 0 50px hsl(var(--cyber) / 0.5); }
+  0%, 100% { box-shadow: 0 0 20px hsl(var(--rose) / 0.2); }
+  50% { box-shadow: 0 0 40px hsl(var(--rose) / 0.4); }
 }
 
 @keyframes swipe-right {
@@ -219,11 +237,18 @@
 
 @keyframes match-pop {
   0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1.2); }
+  50% { transform: scale(1.1); }
   100% { transform: scale(1); opacity: 1; }
 }
 
 @keyframes shimmer {
   0% { background-position: -200% center; }
   100% { background-position: 200% center; }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.15); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.1); }
 }

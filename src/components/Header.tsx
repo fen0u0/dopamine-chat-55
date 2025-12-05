@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Bell, Settings, Zap } from "lucide-react";
+import { Bell, Settings, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import NotificationsModal from "./NotificationsModal";
 
@@ -16,7 +16,7 @@ const Header = ({ title, showLogo = true }: HeaderProps) => {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-40 glass border-b border-border">
-        <div className="flex items-center justify-between px-4 py-3 max-w-lg mx-auto">
+        <div className="flex items-center justify-between px-4 py-3 max-w-2xl mx-auto">
           <motion.button 
             className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
             onClick={() => navigate("/settings")}
@@ -34,11 +34,16 @@ const Header = ({ title, showLogo = true }: HeaderProps) => {
               onClick={() => navigate("/")}
               whileHover={{ scale: 1.05 }}
             >
-              <Zap className="w-6 h-6 text-primary" />
-              <span className="text-xl font-extrabold gradient-text tracking-tight">spark</span>
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              >
+                <Heart className="w-6 h-6 text-primary fill-primary" />
+              </motion.div>
+              <span className="text-xl font-bold gradient-text tracking-tight">cupid</span>
             </motion.div>
           ) : (
-            <h1 className="text-lg font-bold text-foreground tracking-tight lowercase">{title}</h1>
+            <h1 className="text-lg font-semibold text-foreground tracking-tight lowercase">{title}</h1>
           )}
 
           <motion.button 
