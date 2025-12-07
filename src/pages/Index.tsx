@@ -7,6 +7,7 @@ import BottomNav from "@/components/BottomNav";
 import ProfileBubble from "@/components/ProfileBubble";
 import ProfileModal from "@/components/ProfileModal";
 import MatchModal from "@/components/MatchModal";
+import MoodMatchModal from "@/components/MoodMatchModal";
 import { profiles, matches, moodOptions } from "@/data/profiles";
 import { Profile } from "@/types/profile";
 
@@ -16,6 +17,7 @@ const Index = () => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showMatch, setShowMatch] = useState(false);
   const [matchedProfile, setMatchedProfile] = useState<Profile | null>(null);
+  const [showMoodMatch, setShowMoodMatch] = useState(false);
 
   const handleProfileClick = (profile: Profile) => {
     setSelectedProfile(profile);
@@ -33,6 +35,10 @@ const Index = () => {
     }
   };
 
+  const handleMoodMatch = (profile: Profile) => {
+    navigate(`/chat/${profile.id}`);
+  };
+
   const stats = [
     { icon: "🌍", label: "worldwide", value: "50+" },
     { icon: "👻", label: "anon users", value: "2.4k" },
@@ -40,9 +46,9 @@ const Index = () => {
   ];
 
   const quirkyFeatures = [
-    { icon: "🎲", label: "random chat", desc: "meet a stranger" },
-    { icon: "🔮", label: "vibe match", desc: "based on mood" },
-    { icon: "💭", label: "confessions", desc: "spill the tea" },
+    { icon: "🎲", label: "random chat", desc: "meet a stranger", action: () => setShowMoodMatch(true) },
+    { icon: "🔮", label: "vibe match", desc: "based on mood", action: () => setShowMoodMatch(true) },
+    { icon: "💭", label: "confessions", desc: "spill the tea", action: () => navigate("/chats") },
   ];
 
   return (
@@ -132,7 +138,7 @@ const Index = () => {
                 transition={{ delay: 0.15 + index * 0.05 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate("/chats")}
+                onClick={feature.action}
               >
                 <span className="text-2xl block mb-2">{feature.icon}</span>
                 <p className="text-sm font-bold text-foreground">{feature.label}</p>
@@ -311,6 +317,12 @@ const Index = () => {
           setShowMatch(false);
           navigate("/chats");
         }}
+      />
+
+      <MoodMatchModal
+        isOpen={showMoodMatch}
+        onClose={() => setShowMoodMatch(false)}
+        onMatch={handleMoodMatch}
       />
     </div>
   );
