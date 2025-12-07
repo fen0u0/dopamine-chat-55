@@ -4,10 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   Settings,
   Edit2,
-  MapPin,
-  Briefcase,
-  GraduationCap,
-  Heart,
+  Globe,
   Shield,
   LogOut,
   ChevronRight,
@@ -15,9 +12,7 @@ import {
   Sparkles,
   Coffee,
   Moon,
-  Dog,
   Music,
-  Utensils,
   Plane,
   Gamepad2,
   BookOpen,
@@ -26,6 +21,9 @@ import {
   Users,
   MessageCircle,
   Zap,
+  Shuffle,
+  Ghost,
+  Clock,
 } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
@@ -33,63 +31,72 @@ import EditProfileModal from "@/components/EditProfileModal";
 import SafetyCenterModal from "@/components/SafetyCenterModal";
 import { useGems } from "@/contexts/GemsContext";
 import { toast } from "sonner";
+import { generateRandomAlias, quirkyPrompts, moodOptions, vibeOptions } from "@/data/profiles";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { gems } = useGems();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
+  const [alias, setAlias] = useState("sleepy_potato42");
+  const [currentMood, setCurrentMood] = useState("✨ manifesting");
   
   const user = {
-    name: "You",
-    age: 25,
-    bio: "always down for new experiences ✨ | love meeting cool people | let's grab coffee or something",
-    location: "New York, NY",
-    job: "Product Designer",
-    school: "NYU",
-    interests: ["travel", "photography", "music", "hiking", "coffee"],
+    bio: "chronically online | 3am thoughts enthusiast | probably overthinking rn",
+    timezone: "GMT+5",
+    vibe: "chaotic good",
+    quirkyPrompt: {
+      prompt: "my roman empire:",
+      answer: "that one embarrassing thing from 2016"
+    },
+    interests: ["memes", "late night talks", "chaos", "overthinking", "music"],
+  };
+
+  const handleRegenerateAlias = () => {
+    const newAlias = generateRandomAlias();
+    setAlias(newAlias);
+    toast.success(`you're now ${newAlias} 👻`);
   };
 
   const profileDetails = [
-    { icon: <Coffee className="w-4 h-4" />, label: "hangout style", value: "coffee chats" },
-    { icon: <Moon className="w-4 h-4" />, label: "availability", value: "weekends" },
-    { icon: <Dumbbell className="w-4 h-4" />, label: "activity level", value: "active" },
-    { icon: <Dog className="w-4 h-4" />, label: "pets", value: "dog lover" },
-    { icon: <Zap className="w-4 h-4" />, label: "energy", value: "chill vibes" },
+    { icon: <Globe className="w-4 h-4" />, label: "timezone", value: user.timezone },
+    { icon: <Zap className="w-4 h-4" />, label: "current vibe", value: user.vibe },
+    { icon: <Clock className="w-4 h-4" />, label: "active hours", value: "night owl" },
+    { icon: <MessageCircle className="w-4 h-4" />, label: "reply speed", value: "chaotic" },
   ];
 
   const lookingFor = [
-    { icon: <Users className="w-4 h-4" />, label: "looking for", value: "new friends" },
-    { icon: <MessageCircle className="w-4 h-4" />, label: "communication", value: "texter" },
-    { icon: <Sparkles className="w-4 h-4" />, label: "vibe", value: "good conversations" },
+    { icon: <Users className="w-4 h-4" />, label: "here for", value: "random convos" },
+    { icon: <Ghost className="w-4 h-4" />, label: "anonymity", value: "100% anon" },
+    { icon: <Sparkles className="w-4 h-4" />, label: "energy", value: "unhinged welcomed" },
   ];
 
   const passions = [
     { icon: <Coffee className="w-4 h-4" />, label: "coffee" },
     { icon: <Music className="w-4 h-4" />, label: "music" },
     { icon: <Plane className="w-4 h-4" />, label: "travel" },
-    { icon: <Utensils className="w-4 h-4" />, label: "foodie" },
     { icon: <Gamepad2 className="w-4 h-4" />, label: "gaming" },
     { icon: <BookOpen className="w-4 h-4" />, label: "reading" },
     { icon: <Camera className="w-4 h-4" />, label: "photography" },
     { icon: <Dumbbell className="w-4 h-4" />, label: "fitness" },
+    { icon: <Moon className="w-4 h-4" />, label: "3am talks" },
   ];
 
   const handleLogout = () => {
-    toast.success("logged out ✌️");
+    toast.success("vanished into the void ✌️");
   };
 
   const menuItems = [
     { icon: <Gem className="w-5 h-5" />, label: "get gems", chevron: true, action: () => navigate("/settings") },
     { icon: <Shield className="w-5 h-5" />, label: "safety center", chevron: true, action: () => setShowSafetyModal(true) },
     { icon: <Settings className="w-5 h-5" />, label: "settings", chevron: true, action: () => navigate("/settings") },
-    { icon: <Heart className="w-5 h-5" />, label: "go premium ✨", highlight: true, action: () => navigate("/settings") },
-    { icon: <LogOut className="w-5 h-5" />, label: "log out", danger: true, action: handleLogout },
+    { icon: <Sparkles className="w-5 h-5" />, label: "go premium ✨", highlight: true, action: () => navigate("/settings") },
+    { icon: <LogOut className="w-5 h-5" />, label: "vanish", danger: true, action: handleLogout },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      <Header title="profile" showLogo={false} />
+      <Header title="your alias" showLogo={false} />
 
       <main className="pt-20 pb-24 px-4 max-w-2xl mx-auto">
         {/* Profile Card */}
@@ -111,27 +118,42 @@ const Profile = () => {
                 animate={{ scale: [1, 1.02, 1] }}
                 transition={{ duration: 3, repeat: Infinity }}
               >
-                <span className="text-4xl font-bold gradient-text">
-                  {user.name.slice(0, 2).toUpperCase()}
-                </span>
+                <span className="text-5xl">👻</span>
               </motion.div>
 
-              <motion.button 
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-secondary flex items-center justify-center border border-foreground/10"
-                onClick={() => setShowEditModal(true)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Edit2 className="w-4 h-4 text-foreground" />
-              </motion.button>
-
-              <h1 className="text-3xl font-bold text-foreground mb-1">
-                {user.name}, {user.age}
-              </h1>
-              <div className="flex items-center gap-1 text-muted-foreground">
-                <MapPin className="w-4 h-4" />
-                <span className="text-sm">{user.location}</span>
+              <div className="absolute top-4 right-4 flex gap-2">
+                <motion.button 
+                  className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center border border-foreground/10"
+                  onClick={handleRegenerateAlias}
+                  whileHover={{ scale: 1.1, rotate: 180 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Shuffle className="w-4 h-4 text-foreground" />
+                </motion.button>
+                <motion.button 
+                  className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center border border-foreground/10"
+                  onClick={() => setShowEditModal(true)}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Edit2 className="w-4 h-4 text-foreground" />
+                </motion.button>
               </div>
+
+              <h1 className="text-2xl font-bold text-foreground mb-1 font-mono">
+                {alias}
+              </h1>
+              <motion.span 
+                className="pill active cursor-pointer"
+                onClick={() => {
+                  const randomMood = moodOptions[Math.floor(Math.random() * moodOptions.length)];
+                  setCurrentMood(randomMood);
+                  toast.success(`mood updated to ${randomMood}`);
+                }}
+                whileHover={{ scale: 1.05 }}
+              >
+                {currentMood}
+              </motion.span>
             </div>
           </div>
         </motion.div>
@@ -145,8 +167,8 @@ const Profile = () => {
         >
           {[
             { label: "gems", value: gems.toString(), icon: "💎" },
-            { label: "connections", value: "12", icon: "🤝" },
-            { label: "vibes", value: "24", icon: "✨" },
+            { label: "strangers met", value: "47", icon: "👻" },
+            { label: "convos", value: "124", icon: "💬" },
           ].map((stat) => (
             <motion.div
               key={stat.label}
@@ -161,6 +183,20 @@ const Profile = () => {
           ))}
         </motion.div>
 
+        {/* Quirky Prompt */}
+        <motion.div
+          className="section-card mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">🎭</span>
+            <h2 className="font-semibold text-muted-foreground text-sm">{user.quirkyPrompt.prompt}</h2>
+          </div>
+          <p className="text-foreground font-medium">{user.quirkyPrompt.answer}</p>
+        </motion.div>
+
         {/* About */}
         <motion.div
           className="section-card mb-6"
@@ -170,23 +206,12 @@ const Profile = () => {
         >
           <h2 className="font-semibold text-foreground mb-3 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            about me
+            about this stranger
           </h2>
-          <p className="text-sm text-foreground/80 mb-4">{user.bio}</p>
-          
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Briefcase className="w-4 h-4" />
-              <span>{user.job}</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <GraduationCap className="w-4 h-4" />
-              <span>{user.school}</span>
-            </div>
-          </div>
+          <p className="text-sm text-foreground/80">{user.bio}</p>
         </motion.div>
 
-        {/* Looking For */}
+        {/* Here For */}
         <motion.div
           className="section-card mb-6"
           initial={{ opacity: 0, y: 20 }}
@@ -194,8 +219,8 @@ const Profile = () => {
           transition={{ delay: 0.25 }}
         >
           <h2 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Users className="w-4 h-4 text-primary" />
-            what i'm here for
+            <Ghost className="w-4 h-4 text-primary" />
+            the vibe
           </h2>
           <div className="space-y-3">
             {lookingFor.map((item) => (
@@ -210,14 +235,14 @@ const Profile = () => {
           </div>
         </motion.div>
 
-        {/* Lifestyle */}
+        {/* Details */}
         <motion.div
           className="section-card mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="font-semibold text-foreground mb-4">my vibe</h2>
+          <h2 className="font-semibold text-foreground mb-4">details</h2>
           <div className="space-y-3">
             {profileDetails.map((item) => (
               <div key={item.label} className="flex items-center justify-between">
@@ -231,14 +256,14 @@ const Profile = () => {
           </div>
         </motion.div>
 
-        {/* Passions */}
+        {/* Interests */}
         <motion.div
           className="section-card mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
         >
-          <h2 className="font-semibold text-foreground mb-3">interests</h2>
+          <h2 className="font-semibold text-foreground mb-3">into</h2>
           <div className="flex flex-wrap gap-2">
             {passions.map((passion) => (
               <span

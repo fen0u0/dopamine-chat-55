@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Heart, MessageCircle, Sparkles, ArrowRight, Users, Star, Zap } from "lucide-react";
+import { MessageCircle, Sparkles, ArrowRight, Users, Zap, Globe, Shuffle, Ghost } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import ProfileBubble from "@/components/ProfileBubble";
 import ProfileModal from "@/components/ProfileModal";
 import MatchModal from "@/components/MatchModal";
-import { profiles, matches } from "@/data/profiles";
+import { profiles, matches, moodOptions } from "@/data/profiles";
 import { Profile } from "@/types/profile";
 
 const Index = () => {
@@ -34,9 +34,15 @@ const Index = () => {
   };
 
   const stats = [
-    { icon: "🤝", label: "connections today", value: "24" },
-    { icon: "✨", label: "active now", value: "1.2k" },
-    { icon: "🆕", label: "new people", value: "89" },
+    { icon: "🌍", label: "worldwide", value: "50+" },
+    { icon: "👻", label: "anon users", value: "2.4k" },
+    { icon: "✨", label: "vibing rn", value: "1.2k" },
+  ];
+
+  const quirkyFeatures = [
+    { icon: "🎲", label: "random chat", desc: "meet a stranger" },
+    { icon: "🔮", label: "vibe match", desc: "based on mood" },
+    { icon: "💭", label: "confessions", desc: "spill the tea" },
   ];
 
   return (
@@ -55,15 +61,15 @@ const Index = () => {
             animate={{ scale: [1, 1.02, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <Users className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">find your people</span>
+            <Ghost className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium text-primary">100% anonymous</span>
           </motion.div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 leading-tight">
-            meet cool people <span className="gradient-text">near you</span>
+            meet strangers <span className="gradient-text">worldwide</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-md mx-auto mb-8">
-            no cap, the vibes are immaculate here. find your crew, make new friends, expand your circle.
+            no names, no pics, just vibes. connect with real humans across the globe. be anyone you want.
           </p>
 
           <div className="flex justify-center gap-4">
@@ -73,16 +79,17 @@ const Index = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              start connecting
+              start vibing
               <ArrowRight className="w-4 h-4" />
             </motion.button>
             <motion.button
               onClick={() => navigate("/profile")}
-              className="px-6 py-3 rounded-full glass font-semibold"
+              className="px-6 py-3 rounded-full glass font-semibold flex items-center gap-2"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              my profile
+              <Shuffle className="w-4 h-4" />
+              my alias
             </motion.button>
           </div>
         </motion.section>
@@ -103,7 +110,39 @@ const Index = () => {
           ))}
         </motion.section>
 
-        {/* Who's Online */}
+        {/* Quirky Features */}
+        <motion.section
+          className="mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="w-5 h-5 text-coral" />
+            <h2 className="text-lg font-bold text-foreground">quirky stuff</h2>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            {quirkyFeatures.map((feature, index) => (
+              <motion.button
+                key={feature.label}
+                className="glass rounded-2xl p-4 text-center card-hover"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 + index * 0.05 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate("/chats")}
+              >
+                <span className="text-2xl block mb-2">{feature.icon}</span>
+                <p className="text-sm font-bold text-foreground">{feature.label}</p>
+                <p className="text-xs text-muted-foreground">{feature.desc}</p>
+              </motion.button>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* Active Moods */}
         <motion.section
           className="mb-10"
           initial={{ opacity: 0, y: 20 }}
@@ -113,9 +152,39 @@ const Index = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-gold" />
+              <h2 className="text-lg font-bold text-foreground">current moods</h2>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {moodOptions.slice(0, 8).map((mood, index) => (
+              <motion.span
+                key={mood}
+                className="pill cursor-pointer"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 + index * 0.03 }}
+                whileHover={{ scale: 1.05 }}
+              >
+                {mood}
+              </motion.span>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* Online Now */}
+        <motion.section
+          className="mb-10"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Globe className="w-5 h-5 text-primary" />
               <h2 className="text-lg font-bold text-foreground">online rn</h2>
             </div>
-            <span className="text-sm text-muted-foreground">{profiles.filter(p => p.isOnline).length} people</span>
+            <span className="text-sm text-muted-foreground">{profiles.filter(p => p.isOnline).length} strangers</span>
           </div>
 
           <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
@@ -124,7 +193,7 @@ const Index = () => {
                 key={profile.id}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 + index * 0.05 }}
+                transition={{ delay: 0.25 + index * 0.05 }}
               >
                 <ProfileBubble
                   profile={profile}
@@ -147,8 +216,8 @@ const Index = () => {
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Heart className="w-5 h-5 text-primary" />
-              <h2 className="text-lg font-bold text-foreground">your connections</h2>
+              <Users className="w-5 h-5 text-blush" />
+              <h2 className="text-lg font-bold text-foreground">your people</h2>
             </div>
             <button 
               onClick={() => navigate("/chats")}
@@ -170,15 +239,16 @@ const Index = () => {
                 whileHover={{ x: 4 }}
               >
                 <div className="w-12 h-12 rounded-full gradient-border flex items-center justify-center bg-card">
-                  <span className="text-lg font-bold gradient-text">
-                    {match.name.slice(0, 2).toUpperCase()}
-                  </span>
+                  <span className="text-lg">👻</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-foreground">{match.name}</h3>
+                    <h3 className="font-semibold text-foreground font-mono text-sm">{match.name}</h3>
                     {match.isOnline && (
                       <span className="w-2 h-2 rounded-full bg-green-500" />
+                    )}
+                    {match.timezone && (
+                      <span className="text-xs text-muted-foreground">{match.timezone}</span>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground truncate">
@@ -199,8 +269,8 @@ const Index = () => {
         >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-coral" />
-              <h2 className="text-lg font-bold text-foreground">explore people</h2>
+              <MessageCircle className="w-5 h-5 text-coral" />
+              <h2 className="text-lg font-bold text-foreground">explore strangers</h2>
             </div>
           </div>
 
