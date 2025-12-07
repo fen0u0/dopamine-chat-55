@@ -10,4 +10,11 @@ export interface Profile {
   lastMessage?: string;
   lastMessageTime?: string;
   unreadCount?: number;
+  mood?: string;
+  timezone?: string;
+  vibe?: string;
+  quirkyPrompt?: {
+    prompt: string;
+    answer: string;
+  };
 }
