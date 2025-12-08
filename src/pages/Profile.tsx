@@ -52,6 +52,21 @@ const Profile = () => {
     interests: ["memes", "late night talks", "chaos", "overthinking", "music"],
   };
 
+  // Gen Z quirky features
+  const [currentlyStatus] = useState({
+    watching: "that show everyone's talking about",
+    listening: "the same 3 songs on repeat",
+    obsessing: "random wikipedia rabbit holes"
+  });
+
+  const [energyLevel] = useState(73);
+  const [auraPoints] = useState(847);
+  
+  const vibeFlags = {
+    green: ["good listener", "sends memes", "no small talk"],
+    red: ["double texts", "3am overthinking", "spotify wrapped anxiety"]
+  };
+
   const handleRegenerateAlias = () => {
     const newAlias = generateRandomAlias();
     setAlias(newAlias);
@@ -183,18 +198,107 @@ const Profile = () => {
           ))}
         </motion.div>
 
+        {/* Aura & Energy */}
+        <motion.div
+          className="flex gap-3 mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+        >
+          <div className="flex-1 section-card !p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground">aura</span>
+              <span className="text-lg">✨</span>
+            </div>
+            <p className="text-xl font-bold text-foreground">{auraPoints}</p>
+          </div>
+          <div className="flex-1 section-card !p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-muted-foreground">energy</span>
+              <span className="text-lg">⚡</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-gradient-to-r from-primary to-rose-500"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${energyLevel}%` }}
+                  transition={{ duration: 1, delay: 0.3 }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground">{energyLevel}%</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Currently */}
+        <motion.div
+          className="section-card mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.14 }}
+        >
+          <h2 className="font-semibold text-foreground mb-3 text-sm">currently</h2>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">📺</span>
+              <span className="text-foreground/80">{currentlyStatus.watching}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">🎧</span>
+              <span className="text-foreground/80">{currentlyStatus.listening}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">🧠</span>
+              <span className="text-foreground/80">{currentlyStatus.obsessing}</span>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Quirky Prompt */}
         <motion.div
           className="section-card mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
+          transition={{ delay: 0.16 }}
         >
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">🎭</span>
             <h2 className="font-semibold text-muted-foreground text-sm">{user.quirkyPrompt.prompt}</h2>
           </div>
           <p className="text-foreground font-medium">{user.quirkyPrompt.answer}</p>
+        </motion.div>
+
+        {/* Vibe Flags */}
+        <motion.div
+          className="section-card mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18 }}
+        >
+          <h2 className="font-semibold text-foreground mb-3 text-sm">vibe check</h2>
+          <div className="space-y-3">
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">🟢 green flags</p>
+              <div className="flex flex-wrap gap-1.5">
+                {vibeFlags.green.map((flag) => (
+                  <span key={flag} className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/20">
+                    {flag}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">🔴 red flags (affectionate)</p>
+              <div className="flex flex-wrap gap-1.5">
+                {vibeFlags.red.map((flag) => (
+                  <span key={flag} className="text-xs px-2 py-1 rounded-full bg-red-500/10 text-red-500 border border-red-500/20">
+                    {flag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
         </motion.div>
 
         {/* About */}
