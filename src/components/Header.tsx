@@ -27,21 +27,15 @@ const Header = ({ title, showLogo = true }: HeaderProps) => {
           </motion.button>
 
           {showLogo ? (
-            <motion.div
-              className="flex items-center gap-2 cursor-pointer"
+            <motion.button
+              className="text-xl font-bold gradient-text tracking-tight font-mono lowercase"
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               onClick={() => navigate("/")}
               whileHover={{ scale: 1.05 }}
             >
-              <motion.div
-                animate={{ scale: [1, 1.1, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                <Users className="w-6 h-6 text-primary" />
-              </motion.div>
-              <span className="text-xl font-bold gradient-text tracking-tight">cupid</span>
-            </motion.div>
+              vibe~
+            </motion.button>
           ) : (
             <h1 className="text-lg font-semibold text-foreground tracking-tight lowercase">{title}</h1>
           )}
