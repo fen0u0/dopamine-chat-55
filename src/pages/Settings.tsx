@@ -12,8 +12,6 @@ import {
   Star,
   Check,
   Rocket,
-  Flame,
-  Clock,
   Bell,
   Moon,
   Volume2,
@@ -32,16 +30,16 @@ import {
   Heart,
   Palette,
   Vibrate,
-  BellOff,
   UserX,
   Ban,
-  Sparkle,
   Coffee,
   Brain,
   Skull,
   PartyPopper,
+  Sun,
 } from "lucide-react";
 import { useGems } from "@/contexts/GemsContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import BottomNav from "@/components/BottomNav";
 import DailyRewardsModal from "@/components/DailyRewardsModal";
 import ProfileBoostModal from "@/components/ProfileBoostModal";
@@ -49,33 +47,17 @@ import MoodMatchModal from "@/components/MoodMatchModal";
 import { toast } from "sonner";
 import { soundManager } from "@/lib/sounds";
 import { Profile } from "@/types/profile";
+import { Switch } from "@/components/ui/switch";
 
 const Settings = () => {
   const navigate = useNavigate();
   const { gems, addGems, streak, canClaimDaily, boostEndTime, isBoostActive } = useGems();
+  const settings = useSettings();
   const [watchingAd, setWatchingAd] = useState(false);
   const [adProgress, setAdProgress] = useState(0);
   const [showDailyRewards, setShowDailyRewards] = useState(false);
   const [showBoostModal, setShowBoostModal] = useState(false);
   const [showMoodMatch, setShowMoodMatch] = useState(false);
-  
-  // Settings states
-  const [notifications, setNotifications] = useState(true);
-  const [messageNotifs, setMessageNotifs] = useState(true);
-  const [matchNotifs, setMatchNotifs] = useState(true);
-  const [sounds, setSounds] = useState(true);
-  const [vibration, setVibration] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
-  const [showOnline, setShowOnline] = useState(true);
-  const [showTimezone, setShowTimezone] = useState(true);
-  const [readReceipts, setReadReceipts] = useState(true);
-  const [typingIndicator, setTypingIndicator] = useState(true);
-  
-  // Quirky settings
-  const [chaoticMode, setChaoticMode] = useState(false);
-  const [unhingedReplies, setUnhingedReplies] = useState(false);
-  const [cryptidMode, setCryptidMode] = useState(false);
-  const [goblinHours, setGoblinHours] = useState(false);
 
   const boostTimeRemaining = isBoostActive
     ? Math.ceil((boostEndTime! - Date.now()) / 60000)
@@ -97,7 +79,7 @@ const Settings = () => {
         if (prev >= 100) {
           clearInterval(interval);
           setWatchingAd(false);
-          soundManager.playGemCollect();
+          if (settings.sounds) soundManager.playGemCollect();
           addGems(5);
           toast.success("you earned 5 gems! 💎");
           return 0;
@@ -108,7 +90,7 @@ const Settings = () => {
   };
 
   const handleBuyGems = (amount: number, price: string) => {
-    soundManager.playGemCollect();
+    if (settings.sounds) soundManager.playGemCollect();
     addGems(amount);
     toast.success(`you purchased ${amount} gems! 💎`);
   };
@@ -132,31 +114,20 @@ const Settings = () => {
     onChange: (v: boolean) => void;
     quirky?: boolean;
   }) => (
-    <motion.div 
-      className={`flex items-center justify-between py-3 ${quirky ? 'opacity-90' : ''}`}
-      whileHover={{ x: 2 }}
-    >
-      <div className="flex items-center gap-3">
-        <span className={quirky ? "text-coral" : "text-muted-foreground"}>{icon}</span>
-        <div>
+    <div className={`flex items-center justify-between py-3.5 ${quirky ? 'opacity-90' : ''}`}>
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <span className={`flex-shrink-0 ${quirky ? "text-coral" : "text-muted-foreground"}`}>{icon}</span>
+        <div className="min-w-0">
           <p className={`font-medium ${quirky ? 'text-coral' : 'text-foreground'}`}>{label}</p>
-          {description && <p className="text-xs text-muted-foreground">{description}</p>}
+          {description && <p className="text-xs text-muted-foreground truncate">{description}</p>}
         </div>
       </div>
-      <motion.button
-        onClick={() => onChange(!value)}
-        className={`w-12 h-7 rounded-full p-1 transition-colors ${
-          value ? (quirky ? 'bg-coral' : 'bg-primary') : 'bg-secondary'
-        }`}
-        whileTap={{ scale: 0.95 }}
-      >
-        <motion.div
-          className="w-5 h-5 rounded-full bg-white"
-          animate={{ x: value ? 20 : 0 }}
-          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        />
-      </motion.button>
-    </motion.div>
+      <Switch
+        checked={value}
+        onCheckedChange={onChange}
+        className={quirky ? "data-[state=checked]:bg-coral" : ""}
+      />
+    </div>
   );
 
   return (
@@ -166,7 +137,7 @@ const Settings = () => {
         <div className="flex items-center justify-between px-4 h-16 max-w-lg mx-auto">
           <button
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full glass flex items-center justify-center"
+            className="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-secondary/50 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
@@ -318,29 +289,29 @@ const Settings = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
         >
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <Bell className="w-5 h-5 text-primary" />
             <h3 className="font-semibold text-foreground">notifications</h3>
           </div>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border/50">
             <SettingToggle
               icon={<Bell className="w-4 h-4" />}
               label="push notifications"
               description="get notified about activity"
-              value={notifications}
-              onChange={setNotifications}
+              value={settings.notifications}
+              onChange={(v) => settings.updateSetting("notifications", v)}
             />
             <SettingToggle
               icon={<MessageCircle className="w-4 h-4" />}
               label="new messages"
-              value={messageNotifs}
-              onChange={setMessageNotifs}
+              value={settings.messageNotifs}
+              onChange={(v) => settings.updateSetting("messageNotifs", v)}
             />
             <SettingToggle
               icon={<Heart className="w-4 h-4" />}
               label="new connections"
-              value={matchNotifs}
-              onChange={setMatchNotifs}
+              value={settings.matchNotifs}
+              onChange={(v) => settings.updateSetting("matchNotifs", v)}
             />
           </div>
         </motion.div>
@@ -352,22 +323,22 @@ const Settings = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <Volume2 className="w-5 h-5 text-primary" />
             <h3 className="font-semibold text-foreground">sounds & haptics</h3>
           </div>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border/50">
             <SettingToggle
-              icon={sounds ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              icon={settings.sounds ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
               label="sound effects"
-              value={sounds}
-              onChange={setSounds}
+              value={settings.sounds}
+              onChange={(v) => settings.updateSetting("sounds", v)}
             />
             <SettingToggle
               icon={<Vibrate className="w-4 h-4" />}
               label="haptic feedback"
-              value={vibration}
-              onChange={setVibration}
+              value={settings.vibration}
+              onChange={(v) => settings.updateSetting("vibration", v)}
             />
           </div>
         </motion.div>
@@ -379,36 +350,36 @@ const Settings = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
         >
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <Shield className="w-5 h-5 text-primary" />
             <h3 className="font-semibold text-foreground">privacy</h3>
           </div>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border/50">
             <SettingToggle
-              icon={showOnline ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              icon={settings.showOnline ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
               label="show online status"
               description="let others see when you're active"
-              value={showOnline}
-              onChange={setShowOnline}
+              value={settings.showOnline}
+              onChange={(v) => settings.updateSetting("showOnline", v)}
             />
             <SettingToggle
               icon={<Globe className="w-4 h-4" />}
               label="show timezone"
-              value={showTimezone}
-              onChange={setShowTimezone}
+              value={settings.showTimezone}
+              onChange={(v) => settings.updateSetting("showTimezone", v)}
             />
             <SettingToggle
               icon={<Check className="w-4 h-4" />}
               label="read receipts"
               description="show when you've read messages"
-              value={readReceipts}
-              onChange={setReadReceipts}
+              value={settings.readReceipts}
+              onChange={(v) => settings.updateSetting("readReceipts", v)}
             />
             <SettingToggle
               icon={<MessageCircle className="w-4 h-4" />}
               label="typing indicator"
-              value={typingIndicator}
-              onChange={setTypingIndicator}
+              value={settings.typingIndicator}
+              onChange={(v) => settings.updateSetting("typingIndicator", v)}
             />
           </div>
         </motion.div>
@@ -420,17 +391,17 @@ const Settings = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <Palette className="w-5 h-5 text-primary" />
             <h3 className="font-semibold text-foreground">appearance</h3>
           </div>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-border/50">
             <SettingToggle
-              icon={<Moon className="w-4 h-4" />}
+              icon={settings.darkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
               label="dark mode"
               description="easier on the eyes at 3am"
-              value={darkMode}
-              onChange={setDarkMode}
+              value={settings.darkMode}
+              onChange={(v) => settings.updateSetting("darkMode", v)}
             />
           </div>
         </motion.div>
@@ -442,19 +413,19 @@ const Settings = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
         >
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1">
             <PartyPopper className="w-5 h-5 text-coral" />
             <h3 className="font-semibold text-coral">unhinged settings 🌀</h3>
           </div>
-          <p className="text-xs text-muted-foreground mb-4">for the chronically chaotic</p>
-          <div className="divide-y divide-border">
+          <p className="text-xs text-muted-foreground mb-3">for the chronically chaotic</p>
+          <div className="divide-y divide-border/50">
             <SettingToggle
               icon={<Brain className="w-4 h-4" />}
               label="chaotic mode"
               description="random UI surprises"
-              value={chaoticMode}
+              value={settings.chaoticMode}
               onChange={(v) => {
-                setChaoticMode(v);
+                settings.updateSetting("chaoticMode", v);
                 if (v) toast.success("chaos activated 🌀");
               }}
               quirky
@@ -463,9 +434,9 @@ const Settings = () => {
               icon={<Coffee className="w-4 h-4" />}
               label="goblin hours"
               description="enhanced features after midnight"
-              value={goblinHours}
+              value={settings.goblinHours}
               onChange={(v) => {
-                setGoblinHours(v);
+                settings.updateSetting("goblinHours", v);
                 if (v) toast.success("goblin mode: on 🧌");
               }}
               quirky
@@ -474,9 +445,9 @@ const Settings = () => {
               icon={<Ghost className="w-4 h-4" />}
               label="cryptid mode"
               description="become extra mysterious"
-              value={cryptidMode}
+              value={settings.cryptidMode}
               onChange={(v) => {
-                setCryptidMode(v);
+                settings.updateSetting("cryptidMode", v);
                 if (v) toast.success("*vanishes mysteriously* 👻");
               }}
               quirky
@@ -485,9 +456,9 @@ const Settings = () => {
               icon={<Skull className="w-4 h-4" />}
               label="unhinged replies"
               description="AI suggests chaotic responses"
-              value={unhingedReplies}
+              value={settings.unhingedReplies}
               onChange={(v) => {
-                setUnhingedReplies(v);
+                settings.updateSetting("unhingedReplies", v);
                 if (v) toast.success("prepare for chaos 💀");
               }}
               quirky
@@ -521,7 +492,7 @@ const Settings = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 {pkg.popular && (
-                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-primary text-[10px] text-white font-semibold">
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-primary text-[10px] text-primary-foreground font-semibold">
                     POPULAR
                   </span>
                 )}
@@ -562,13 +533,16 @@ const Settings = () => {
               "exclusive quirky features",
             ].map((feature) => (
               <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Check className="w-4 h-4 text-primary" />
+                <Check className="w-4 h-4 text-primary flex-shrink-0" />
                 {feature}
               </li>
             ))}
           </ul>
 
-          <button className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold">
+          <button 
+            onClick={() => toast.info("premium coming soon! 👑")}
+            className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-semibold hover:opacity-90 transition-opacity"
+          >
             upgrade to premium - $9.99/mo
           </button>
         </motion.div>
@@ -580,19 +554,20 @@ const Settings = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.55 }}
         >
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <HelpCircle className="w-5 h-5 text-primary" />
             <h3 className="font-semibold text-foreground">support & info</h3>
           </div>
           <div className="space-y-1">
             {[
-              { icon: <HelpCircle className="w-4 h-4" />, label: "help center" },
-              { icon: <FileText className="w-4 h-4" />, label: "terms of service" },
-              { icon: <Shield className="w-4 h-4" />, label: "privacy policy" },
-              { icon: <Download className="w-4 h-4" />, label: "download my data" },
+              { icon: <HelpCircle className="w-4 h-4" />, label: "help center", action: () => toast.info("help center coming soon") },
+              { icon: <FileText className="w-4 h-4" />, label: "terms of service", action: () => toast.info("terms of service") },
+              { icon: <Shield className="w-4 h-4" />, label: "privacy policy", action: () => toast.info("privacy policy") },
+              { icon: <Download className="w-4 h-4" />, label: "download my data", action: () => toast.info("data download requested") },
             ].map((item) => (
               <motion.button
                 key={item.label}
+                onClick={item.action}
                 className="w-full flex items-center gap-3 py-3 px-2 rounded-xl hover:bg-secondary/50 transition-colors"
                 whileHover={{ x: 4 }}
               >
@@ -610,20 +585,20 @@ const Settings = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
         >
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <Trash2 className="w-5 h-5 text-destructive" />
             <h3 className="font-semibold text-destructive">danger zone</h3>
           </div>
           <div className="space-y-1">
             {[
-              { icon: <UserX className="w-4 h-4" />, label: "deactivate account" },
-              { icon: <Ban className="w-4 h-4" />, label: "blocked users" },
+              { icon: <UserX className="w-4 h-4" />, label: "deactivate account", danger: false },
+              { icon: <Ban className="w-4 h-4" />, label: "blocked users", danger: false },
               { icon: <Trash2 className="w-4 h-4" />, label: "delete account", danger: true },
             ].map((item) => (
               <motion.button
                 key={item.label}
                 onClick={() => toast.error("this would do something scary")}
-                className={`w-full flex items-center gap-3 py-3 px-2 rounded-xl hover:bg-destructive/10 transition-colors`}
+                className="w-full flex items-center gap-3 py-3 px-2 rounded-xl hover:bg-destructive/10 transition-colors"
                 whileHover={{ x: 4 }}
               >
                 <span className="text-destructive">{item.icon}</span>
