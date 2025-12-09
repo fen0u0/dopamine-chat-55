@@ -1,17 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Heart, MoreVertical, Smile, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Heart, MoreVertical, Sparkles } from "lucide-react";
 import { matches } from "@/data/profiles";
 import { cn } from "@/lib/utils";
 import ChatOptionsModal from "@/components/ChatOptionsModal";
-
-interface Message {
-  id: string;
-  text: string;
-  sender: "me" | "them";
-  timestamp: string;
-}
+import { useChat, getDefaultMessages } from "@/contexts/ChatContext";
 
 const Chat = () => {
   const { id } = useParams();
@@ -20,15 +14,18 @@ const Chat = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { messages: allMessages, addMessage, initializeChat } = useChat();
 
   const profile = matches.find((m) => m.id === id);
+  const chatId = id || "";
+  
+  useEffect(() => {
+    if (chatId) {
+      initializeChat(chatId, getDefaultMessages());
+    }
+  }, [chatId, initializeChat]);
 
-  const [messages, setMessages] = useState<Message[]>([
-    { id: "1", text: "yo whats good 👋", sender: "them", timestamp: "10:30 AM" },
-    { id: "2", text: "heyyy im doing great wbu!", sender: "me", timestamp: "10:32 AM" },
-    { id: "3", text: "chillin rn, wanna hang later?", sender: "them", timestamp: "10:33 AM" },
-    { id: "4", text: "yesss im so down", sender: "me", timestamp: "10:35 AM" },
-  ]);
+  const messages = allMessages[chatId] || [];
 
   const emojis = ["✨", "💀", "😭", "🔥", "💅", "🫶", "😩", "💜", "🤭", "👀", "😈", "🥺"];
 
@@ -39,14 +36,14 @@ const Chat = () => {
   const handleSend = () => {
     if (!newMessage.trim()) return;
 
-    const message: Message = {
+    const message = {
       id: Date.now().toString(),
       text: newMessage,
-      sender: "me",
+      sender: "me" as const,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
 
-    setMessages((prev) => [...prev, message]);
+    addMessage(chatId, message);
     setNewMessage("");
     setShowEmojis(false);
 
@@ -59,24 +56,24 @@ const Chat = () => {
         "ur literally so iconic",
         "periodt 💅",
       ];
-      const reply: Message = {
+      const reply = {
         id: (Date.now() + 1).toString(),
         text: replies[Math.floor(Math.random() * replies.length)],
-        sender: "them",
+        sender: "them" as const,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
-      setMessages((prev) => [...prev, reply]);
+      addMessage(chatId, reply);
     }, 1500);
   };
 
   const handleSendHeart = () => {
-    const message: Message = {
+    const message = {
       id: Date.now().toString(),
       text: "🫶",
-      sender: "me",
+      sender: "me" as const,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
-    setMessages((prev) => [...prev, message]);
+    addMessage(chatId, message);
   };
 
   const addEmoji = (emoji: string) => {
