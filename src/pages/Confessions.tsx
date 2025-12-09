@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Heart, Flame, Ghost, Sparkles } from "lucide-react";
+import { Send, Ghost, Smile } from "lucide-react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
@@ -25,9 +25,15 @@ const Confessions = () => {
   const [confessions, setConfessions] = useState<Confession[]>(initialConfessions);
   const [newConfession, setNewConfession] = useState("");
   const [selectedMood, setSelectedMood] = useState("🤫");
+  const [showEmojis, setShowEmojis] = useState(false);
 
   const moods = ["🤫", "💀", "🥹", "😳", "🎭", "✨", "🫠", "👻"];
   const reactionEmojis = ["💀", "😭", "🫠", "🙌", "🫂", "✨"];
+  const textEmojis = ["✨", "💀", "😭", "🔥", "💅", "🫶", "😩", "💜", "🤭", "👀", "😈", "🥺", "🫣", "💯", "🙃", "😮‍💨"];
+
+  const addEmoji = (emoji: string) => {
+    setNewConfession((prev) => prev + emoji);
+  };
 
   const handlePost = () => {
     if (!newConfession.trim()) return;
@@ -42,6 +48,7 @@ const Confessions = () => {
     
     setConfessions([confession, ...confessions]);
     setNewConfession("");
+    setShowEmojis(false);
     toast.success("confession posted anonymously 👻");
   };
 
@@ -90,20 +97,57 @@ const Confessions = () => {
                 className="w-full bg-transparent border-none outline-none resize-none text-foreground placeholder:text-muted-foreground text-sm min-h-[60px]"
                 maxLength={200}
               />
+              {/* Emoji Picker */}
+              <AnimatePresence>
+                {showEmojis && (
+                  <motion.div
+                    className="mt-2 p-2 rounded-xl bg-secondary/50 border border-border"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <div className="flex flex-wrap gap-1 justify-center">
+                      {textEmojis.map((emoji) => (
+                        <motion.button
+                          key={emoji}
+                          onClick={() => addEmoji(emoji)}
+                          className="text-xl p-1.5 hover:bg-secondary rounded-lg transition-colors"
+                          whileHover={{ scale: 1.2 }}
+                          whileTap={{ scale: 0.9 }}
+                        >
+                          {emoji}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <div className="flex items-center justify-between mt-2">
-                <div className="flex gap-1">
-                  {moods.map((mood) => (
-                    <motion.button
-                      key={mood}
-                      onClick={() => setSelectedMood(mood)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all ${
-                        selectedMood === mood ? "bg-primary/20 scale-110" : "hover:bg-secondary"
-                      }`}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      {mood}
-                    </motion.button>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <motion.button
+                    onClick={() => setShowEmojis(!showEmojis)}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                      showEmojis ? "bg-primary text-primary-foreground" : "hover:bg-secondary text-muted-foreground"
+                    }`}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Smile className="w-4 h-4" />
+                  </motion.button>
+                  <div className="flex gap-1">
+                    {moods.map((mood) => (
+                      <motion.button
+                        key={mood}
+                        onClick={() => setSelectedMood(mood)}
+                        className={`w-7 h-7 rounded-full flex items-center justify-center text-sm transition-all ${
+                          selectedMood === mood ? "bg-primary/20 scale-110" : "hover:bg-secondary"
+                        }`}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        {mood}
+                      </motion.button>
+                    ))}
+                  </div>
                 </div>
                 <motion.button
                   onClick={handlePost}
