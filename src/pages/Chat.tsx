@@ -51,10 +51,16 @@ const Chat = () => {
     setTimeout(() => {
       const replies = [
         "no way thats so real 💀",
-        "slay bestie ✨",
         "LMAOOO stoppp 😭",
-        "ur literally so iconic",
-        "periodt 💅",
+        "Hmm, Ok noice ",
+        "What u doing tonight btw ?",
+        "Where do you live eh ?",
+        "From which country ?",
+        "From which state ?",
+        "ur literally so cool bro",
+        "Do you play any instruments",
+        "I play the guitar btw",
+        "What u doing rn ?",
       ];
       const reply = {
         id: (Date.now() + 1).toString(),
