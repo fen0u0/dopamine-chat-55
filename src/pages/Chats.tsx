@@ -9,9 +9,10 @@ const Chats = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const currentUser = localStorage.getItem("currentUser");
+  // ⬇️ normalize user once
+  const currentUser = localStorage.getItem("currentUser")?.trim() || null;
 
-  // Redirect if user is not logged in
+  /* 🔒 Redirect if user is not logged in */
   useEffect(() => {
     if (!currentUser) {
       navigate("/");
@@ -22,6 +23,7 @@ const Chats = () => {
     setSearchQuery("");
   };
 
+  // ⬇️ chat ID compatible with Chat.tsx
   const openGlobalChat = () => {
     navigate("/chat/global");
   };
@@ -59,7 +61,7 @@ const Chats = () => {
           )}
         </motion.div>
 
-        {/* Active Chat Section */}
+        {/* Chats */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -68,6 +70,7 @@ const Chats = () => {
             convos 💬
           </h2>
 
+          {/* Global Chat */}
           <motion.div
             onClick={openGlobalChat}
             className="p-4 rounded-2xl bg-secondary cursor-pointer hover:bg-secondary/80 transition-all"
@@ -78,12 +81,13 @@ const Chats = () => {
               Global Chat
             </h3>
             <p className="text-sm text-muted-foreground">
-              chatting as <span className="font-semibold">{currentUser}</span>
+              chatting as{" "}
+              <span className="font-semibold">{currentUser}</span>
             </p>
           </motion.div>
         </motion.div>
 
-        {/* Empty State (optional, aesthetic) */}
+        {/* Empty State */}
         {!searchQuery && (
           <motion.div
             className="flex flex-col items-center justify-center py-16 text-center"
