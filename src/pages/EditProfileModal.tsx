@@ -14,6 +14,7 @@ const EditProfileModal = ({ isOpen, onClose, onSave, profile }: EditProfileModal
   const [timezone, setTimezone] = useState(profile.timezone);
   const [vibe, setVibe] = useState(profile.vibe);
 
+  // Reset modal fields when opened
   useEffect(() => {
     if (isOpen) {
       setBio(profile.bio);
@@ -23,12 +24,7 @@ const EditProfileModal = ({ isOpen, onClose, onSave, profile }: EditProfileModal
   }, [isOpen, profile]);
 
   const handleSave = () => {
-    onSave({
-      ...profile,
-      bio,
-      timezone,
-      vibe,
-    });
+    onSave({ ...profile, bio, timezone, vibe });
   };
 
   return (
