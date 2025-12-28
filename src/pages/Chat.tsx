@@ -1,95 +1,79 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Heart, MoreVertical, Sparkles } from "lucide-react";
-import { matches } from "@/data/profiles";
+import { ArrowLeft, Send, Heart, Sparkles, MoreVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ChatOptionsModal from "@/components/ChatOptionsModal";
-import { useChat, getDefaultMessages } from "@/contexts/ChatContext";
+
+// Type for message
+interface Message {
+  id: string;
+  text: string;
+  sender: string;
+  timestamp: string;
+}
 
 const Chat = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const chatId = id || "default_chat";
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const [newMessage, setNewMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
   const [showOptions, setShowOptions] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { messages: allMessages, addMessage, initializeChat } = useChat();
 
-  const profile = matches.find((m) => m.id === id);
-  const chatId = id || "";
-  
+  const currentUser = localStorage.getItem("currentUser") || "Prithwis";
+  const otherUser = currentUser === "Prithwis" ? "Friend" : "Prithwis";
+
+  // Load messages from localStorage on mount
   useEffect(() => {
-    if (chatId) {
-      initializeChat(chatId, getDefaultMessages());
-    }
-  }, [chatId, initializeChat]);
+    const savedMessages = JSON.parse(localStorage.getItem(chatId) || "[]");
+    setMessages(savedMessages);
+  }, [chatId]);
 
-  const messages = allMessages[chatId] || [];
-
-  const emojis = ["✨", "💀", "😭", "🔥", "💅", "🫶", "😩", "💜", "🤭", "👀", "😈", "🥺"];
-
+  // Scroll to bottom on messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const emojis = ["✨", "💀", "😭", "🔥", "💅", "🫶", "😩", "💜", "🤭", "👀", "😈", "🥺"];
+
+  const saveMessages = (newMessages: Message[]) => {
+    setMessages(newMessages);
+    localStorage.setItem(chatId, JSON.stringify(newMessages));
+  };
+
   const handleSend = () => {
     if (!newMessage.trim()) return;
 
-    const message = {
+    const message: Message = {
       id: Date.now().toString(),
       text: newMessage,
-      sender: "me" as const,
+      sender: currentUser,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
 
-    addMessage(chatId, message);
+    saveMessages([...messages, message]);
     setNewMessage("");
     setShowEmojis(false);
-
-    // Simulate reply
-    setTimeout(() => {
-      const replies = [
-        "no way thats so real 💀",
-        "LMAOOO stoppp 😭",
-        "Hmm, Ok noice ",
-        "What u doing tonight btw ?",
-        "Where do you live eh ?",
-        "From which country ?",
-        "From which state ?",
-        "ur literally so cool bro",
-        "Do you play any instruments",
-        "I play the guitar btw",
-        "What u doing rn ?",
-      ];
-      const reply = {
-        id: (Date.now() + 1).toString(),
-        text: replies[Math.floor(Math.random() * replies.length)],
-        sender: "them" as const,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      addMessage(chatId, reply);
-    }, 1500);
   };
 
   const handleSendHeart = () => {
-    const message = {
+    const message: Message = {
       id: Date.now().toString(),
       text: "🫶",
-      sender: "me" as const,
+      sender: currentUser,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
-    addMessage(chatId, message);
+
+    saveMessages([...messages, message]);
   };
 
   const addEmoji = (emoji: string) => {
     setNewMessage((prev) => prev + emoji);
   };
-
-  if (!profile) {
-    navigate("/chats");
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -105,29 +89,21 @@ const Chat = () => {
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </motion.button>
 
-          <motion.div 
-            className="flex items-center gap-3 flex-1 cursor-pointer"
-            whileHover={{ scale: 1.02 }}
-          >
+          <div className="flex items-center gap-3 flex-1">
             <div className="relative">
               <div className="w-10 h-10 rounded-full gradient-border flex items-center justify-center bg-card">
                 <span className="text-lg font-bold gradient-text">
-                  {profile.name.charAt(0)}
+                  {otherUser.charAt(0)}
                 </span>
               </div>
-              {profile.isOnline && (
-                <div className="absolute bottom-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-background animate-pulse" />
-              )}
             </div>
             <div>
-              <h1 className="font-bold text-foreground tracking-tight">{profile.name}</h1>
-              <p className="text-xs text-muted-foreground font-mono">
-                {profile.isOnline ? "online rn ✨" : "offline"}
-              </p>
+              <h1 className="font-bold text-foreground tracking-tight">{otherUser}</h1>
+              <p className="text-xs text-muted-foreground font-mono">online rn ✨</p>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.button 
+          <motion.button
             className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
             onClick={() => setShowOptions(true)}
             whileHover={{ scale: 1.1 }}
@@ -142,21 +118,20 @@ const Chat = () => {
       <main className="flex-1 pt-20 pb-24 px-4 overflow-y-auto max-w-lg mx-auto w-full">
         <div className="space-y-3 py-4">
           <AnimatePresence>
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <motion.div
                 key={message.id}
                 className={cn(
                   "flex",
-                  message.sender === "me" ? "justify-end" : "justify-start"
+                  message.sender === currentUser ? "justify-end" : "justify-start"
                 )}
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
               >
                 <div
                   className={cn(
                     "max-w-[75%] rounded-2xl px-4 py-3 transition-all",
-                    message.sender === "me"
+                    message.sender === currentUser
                       ? "bg-primary text-primary-foreground rounded-br-sm"
                       : "bg-secondary text-foreground rounded-bl-sm border border-foreground/5"
                   )}
@@ -165,7 +140,7 @@ const Chat = () => {
                   <p
                     className={cn(
                       "text-[10px] mt-1 font-mono",
-                      message.sender === "me"
+                      message.sender === currentUser
                         ? "text-primary-foreground/60"
                         : "text-muted-foreground"
                     )}
@@ -211,7 +186,7 @@ const Chat = () => {
       {/* Input */}
       <div className="fixed bottom-0 left-0 right-0 glass border-t border-border">
         <div className="flex items-center gap-2 px-4 py-3 max-w-lg mx-auto">
-          <motion.button 
+          <motion.button
             className={cn(
               "w-10 h-10 rounded-full flex items-center justify-center transition-all",
               showEmojis ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
@@ -241,11 +216,7 @@ const Chat = () => {
             whileTap={{ scale: 0.9 }}
             whileHover={{ scale: 1.1 }}
           >
-            {newMessage.trim() ? (
-              <Send className="w-5 h-5" />
-            ) : (
-              <Heart className="w-5 h-5" />
-            )}
+            {newMessage.trim() ? <Send className="w-5 h-5" /> : <Heart className="w-5 h-5" />}
           </motion.button>
         </div>
       </div>
@@ -253,7 +224,7 @@ const Chat = () => {
       <ChatOptionsModal
         isOpen={showOptions}
         onClose={() => setShowOptions(false)}
-        profileName={profile.name}
+        profileName={otherUser}
       />
     </div>
   );
