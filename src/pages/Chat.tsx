@@ -9,7 +9,7 @@ interface Message {
   id: string;
   text: string;
   sender: string;
-  timestamp: string;
+  timestamp: number; // ⬅️ store raw timestamp
 }
 
 const Chat = () => {
@@ -17,15 +17,21 @@ const Chat = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const chatId = id || "default_chat";
+  const currentUser = localStorage.getItem("currentUser");
+
+  // ⬇️ safer username handling
+  const otherUser = id?.trim() || "unknown";
+
+  // ⬇️ unique chat ID per user pair
+  const chatId =
+    currentUser && otherUser
+      ? `chat_${[currentUser, otherUser].sort().join("_")}`
+      : "default_chat";
 
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [showOptions, setShowOptions] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
-
-  const currentUser = localStorage.getItem("currentUser");
-  const otherUser = id || "unknown";
 
   /* 🔒 Redirect if user didn't enter name */
   useEffect(() => {
@@ -34,10 +40,14 @@ const Chat = () => {
     }
   }, [currentUser, navigate]);
 
-  /* 📦 Load messages */
+  /* 📦 Load messages safely */
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem(chatId) || "[]");
-    setMessages(saved);
+    try {
+      const saved = JSON.parse(localStorage.getItem(chatId) || "[]");
+      setMessages(Array.isArray(saved) ? saved : []);
+    } catch {
+      setMessages([]);
+    }
   }, [chatId]);
 
   /* ⬇️ Auto scroll */
@@ -45,7 +55,20 @@ const Chat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const emojis = ["✨", "💀", "😭", "🔥", "💅", "🫶", "😩", "💜", "🤭", "👀", "😈", "🥺"];
+  const emojis = [
+    "✨",
+    "💀",
+    "😭",
+    "🔥",
+    "💅",
+    "🫶",
+    "😩",
+    "💜",
+    "🤭",
+    "👀",
+    "😈",
+    "🥺",
+  ];
 
   const saveMessages = (updated: Message[]) => {
     setMessages(updated);
@@ -56,13 +79,10 @@ const Chat = () => {
     if (!newMessage.trim() || !currentUser) return;
 
     const message: Message = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(), // ⬅️ safer ID
       text: newMessage,
       sender: currentUser,
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      timestamp: Date.now(),
     };
 
     saveMessages([...messages, message]);
@@ -76,13 +96,10 @@ const Chat = () => {
     saveMessages([
       ...messages,
       {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         text: "🫶",
         sender: currentUser,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        timestamp: Date.now(),
       },
     ]);
   };
@@ -131,7 +148,9 @@ const Chat = () => {
                 key={msg.id}
                 className={cn(
                   "flex",
-                  msg.sender === currentUser ? "justify-end" : "justify-start"
+                  msg.sender === currentUser
+                    ? "justify-end"
+                    : "justify-start"
                 )}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -146,7 +165,10 @@ const Chat = () => {
                 >
                   {msg.text}
                   <div className="text-[10px] mt-1 opacity-60 font-mono">
-                    {msg.timestamp}
+                    {new Date(msg.timestamp).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </div>
                 </div>
               </motion.div>
@@ -177,7 +199,7 @@ const Chat = () => {
       <div className="fixed bottom-0 left-0 right-0 glass border-t border-border">
         <div className="flex items-center gap-2 px-4 py-3 max-w-lg mx-auto">
           <button
-            onClick={() => setShowEmojis(!showEmojis)}
+            onClick={() => setShowEmojis((p) => !p)}
             className="w-10 h-10 rounded-full hover:bg-secondary"
           >
             <Sparkles />
