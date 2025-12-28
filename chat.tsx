@@ -1,95 +1,91 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Heart, MoreVertical, Sparkles } from "lucide-react";
-import { matches } from "@/data/profiles";
+import { ArrowLeft, Send, Heart, Sparkles, MoreVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ChatOptionsModal from "@/components/ChatOptionsModal";
-import { useChat, getDefaultMessages } from "@/contexts/ChatContext";
+
+interface Message {
+  id: string;
+  text: string;
+  sender: string;
+  timestamp: string;
+}
 
 const Chat = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const chatId = id || "default_chat";
+
   const [newMessage, setNewMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
   const [showOptions, setShowOptions] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { messages: allMessages, addMessage, initializeChat } = useChat();
 
-  const profile = matches.find((m) => m.id === id);
-  const chatId = id || "";
-  
+  const currentUser = localStorage.getItem("currentUser");
+  const otherUser = id || "unknown";
+
+  /* 🔒 Redirect if user didn't enter name */
   useEffect(() => {
-    if (chatId) {
-      initializeChat(chatId, getDefaultMessages());
+    if (!currentUser) {
+      navigate("/");
     }
-  }, [chatId, initializeChat]);
+  }, [currentUser, navigate]);
 
-  const messages = allMessages[chatId] || [];
+  /* 📦 Load messages */
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem(chatId) || "[]");
+    setMessages(saved);
+  }, [chatId]);
 
-  const emojis = ["✨", "💀", "😭", "🔥", "💅", "🫶", "😩", "💜", "🤭", "👀", "😈", "🥺"];
-
+  /* ⬇️ Auto scroll */
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
-    if (!newMessage.trim()) return;
+  const emojis = ["✨", "💀", "😭", "🔥", "💅", "🫶", "😩", "💜", "🤭", "👀", "😈", "🥺"];
 
-    const message = {
+  const saveMessages = (updated: Message[]) => {
+    setMessages(updated);
+    localStorage.setItem(chatId, JSON.stringify(updated));
+  };
+
+  const handleSend = () => {
+    if (!newMessage.trim() || !currentUser) return;
+
+    const message: Message = {
       id: Date.now().toString(),
       text: newMessage,
-      sender: "me" as const,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      sender: currentUser,
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
 
-    addMessage(chatId, message);
+    saveMessages([...messages, message]);
     setNewMessage("");
     setShowEmojis(false);
-
-    // Simulate reply
-    setTimeout(() => {
-      const replies = [
-        "no way thats so real 💀",
-        "LMAOOO stoppp 😭",
-        "Hmm, Ok noice ",
-        "What u doing tonight btw ?",
-        "Where do you live eh ?",
-        "From which country ?",
-        "From which state ?",
-        "ur literally so cool bro",
-        "Do you play any instruments",
-        "I play the guitar btw",
-        "What u doing rn ?",
-      ];
-      const reply = {
-        id: (Date.now() + 1).toString(),
-        text: replies[Math.floor(Math.random() * replies.length)],
-        sender: "them" as const,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      addMessage(chatId, reply);
-    }, 1500);
   };
 
   const handleSendHeart = () => {
-    const message = {
-      id: Date.now().toString(),
-      text: "🫶",
-      sender: "me" as const,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-    addMessage(chatId, message);
-  };
+    if (!currentUser) return;
 
-  const addEmoji = (emoji: string) => {
-    setNewMessage((prev) => prev + emoji);
+    saveMessages([
+      ...messages,
+      {
+        id: Date.now().toString(),
+        text: "🫶",
+        sender: currentUser,
+        timestamp: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      },
+    ]);
   };
-
-  if (!profile) {
-    navigate("/chats");
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -98,42 +94,30 @@ const Chat = () => {
         <div className="flex items-center gap-3 px-4 py-3 max-w-lg mx-auto">
           <motion.button
             onClick={() => navigate("/chats")}
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
-            whileHover={{ scale: 1.1 }}
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-secondary"
             whileTap={{ scale: 0.9 }}
           >
-            <ArrowLeft className="w-5 h-5 text-foreground" />
+            <ArrowLeft className="w-5 h-5" />
           </motion.button>
 
-          <motion.div 
-            className="flex items-center gap-3 flex-1 cursor-pointer"
-            whileHover={{ scale: 1.02 }}
-          >
-            <div className="relative">
-              <div className="w-10 h-10 rounded-full gradient-border flex items-center justify-center bg-card">
-                <span className="text-lg font-bold gradient-text">
-                  {profile.name.charAt(0)}
-                </span>
-              </div>
-              {profile.isOnline && (
-                <div className="absolute bottom-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-background animate-pulse" />
-              )}
+          <div className="flex items-center gap-3 flex-1">
+            <div className="w-10 h-10 rounded-full gradient-border flex items-center justify-center bg-card">
+              <span className="text-lg font-bold gradient-text">
+                {otherUser.charAt(0).toUpperCase()}
+              </span>
             </div>
             <div>
-              <h1 className="font-bold text-foreground tracking-tight">{profile.name}</h1>
-              <p className="text-xs text-muted-foreground font-mono">
-                {profile.isOnline ? "online rn ✨" : "offline"}
-              </p>
+              <h1 className="font-bold">{otherUser}</h1>
+              <p className="text-xs text-muted-foreground">online rn ✨</p>
             </div>
-          </motion.div>
+          </div>
 
-          <motion.button 
-            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
+          <motion.button
             onClick={() => setShowOptions(true)}
-            whileHover={{ scale: 1.1 }}
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-secondary"
             whileTap={{ scale: 0.9 }}
           >
-            <MoreVertical className="w-5 h-5 text-muted-foreground" />
+            <MoreVertical className="w-5 h-5" />
           </motion.button>
         </div>
       </header>
@@ -142,36 +126,28 @@ const Chat = () => {
       <main className="flex-1 pt-20 pb-24 px-4 overflow-y-auto max-w-lg mx-auto w-full">
         <div className="space-y-3 py-4">
           <AnimatePresence>
-            {messages.map((message, index) => (
+            {messages.map((msg) => (
               <motion.div
-                key={message.id}
+                key={msg.id}
                 className={cn(
                   "flex",
-                  message.sender === "me" ? "justify-end" : "justify-start"
+                  msg.sender === currentUser ? "justify-end" : "justify-start"
                 )}
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
               >
                 <div
                   className={cn(
-                    "max-w-[75%] rounded-2xl px-4 py-3 transition-all",
-                    message.sender === "me"
+                    "max-w-[75%] px-4 py-3 rounded-2xl text-sm",
+                    msg.sender === currentUser
                       ? "bg-primary text-primary-foreground rounded-br-sm"
-                      : "bg-secondary text-foreground rounded-bl-sm border border-foreground/5"
+                      : "bg-secondary border border-foreground/5 rounded-bl-sm"
                   )}
                 >
-                  <p className="text-sm font-medium">{message.text}</p>
-                  <p
-                    className={cn(
-                      "text-[10px] mt-1 font-mono",
-                      message.sender === "me"
-                        ? "text-primary-foreground/60"
-                        : "text-muted-foreground"
-                    )}
-                  >
-                    {message.timestamp}
-                  </p>
+                  {msg.text}
+                  <div className="text-[10px] mt-1 opacity-60 font-mono">
+                    {msg.timestamp}
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -181,79 +157,53 @@ const Chat = () => {
       </main>
 
       {/* Emoji Picker */}
-      <AnimatePresence>
-        {showEmojis && (
-          <motion.div
-            className="fixed bottom-20 left-4 right-4 max-w-lg mx-auto z-30"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-          >
-            <div className="glass rounded-2xl p-3">
-              <div className="flex flex-wrap gap-2 justify-center">
-                {emojis.map((emoji) => (
-                  <motion.button
-                    key={emoji}
-                    onClick={() => addEmoji(emoji)}
-                    className="text-2xl p-2 hover:bg-secondary rounded-lg transition-colors"
-                    whileHover={{ scale: 1.3 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    {emoji}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {showEmojis && (
+        <div className="fixed bottom-20 left-4 right-4 max-w-lg mx-auto glass p-3 rounded-2xl">
+          <div className="flex flex-wrap justify-center gap-2">
+            {emojis.map((e) => (
+              <button
+                key={e}
+                onClick={() => setNewMessage((p) => p + e)}
+                className="text-2xl p-2 hover:bg-secondary rounded-lg"
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Input */}
       <div className="fixed bottom-0 left-0 right-0 glass border-t border-border">
         <div className="flex items-center gap-2 px-4 py-3 max-w-lg mx-auto">
-          <motion.button 
-            className={cn(
-              "w-10 h-10 rounded-full flex items-center justify-center transition-all",
-              showEmojis ? "bg-primary text-primary-foreground" : "hover:bg-secondary"
-            )}
+          <button
             onClick={() => setShowEmojis(!showEmojis)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            className="w-10 h-10 rounded-full hover:bg-secondary"
           >
-            <Sparkles className="w-5 h-5" />
-          </motion.button>
+            <Sparkles />
+          </button>
+
           <input
-            type="text"
-            placeholder="say something..."
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            className="flex-1 px-4 py-3 rounded-full bg-secondary border border-foreground/5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+            placeholder="say something..."
+            className="flex-1 px-4 py-3 rounded-full bg-secondary border border-foreground/5"
           />
-          <motion.button
-            className={cn(
-              "w-10 h-10 rounded-full flex items-center justify-center transition-all",
-              newMessage.trim()
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary hover:bg-violet text-foreground hover:text-foreground"
-            )}
+
+          <button
             onClick={newMessage.trim() ? handleSend : handleSendHeart}
-            whileTap={{ scale: 0.9 }}
-            whileHover={{ scale: 1.1 }}
+            className="w-10 h-10 rounded-full bg-primary text-primary-foreground"
           >
-            {newMessage.trim() ? (
-              <Send className="w-5 h-5" />
-            ) : (
-              <Heart className="w-5 h-5" />
-            )}
-          </motion.button>
+            {newMessage.trim() ? <Send /> : <Heart />}
+          </button>
         </div>
       </div>
 
       <ChatOptionsModal
         isOpen={showOptions}
         onClose={() => setShowOptions(false)}
-        profileName={profile.name}
+        profileName={otherUser}
       />
     </div>
   );
