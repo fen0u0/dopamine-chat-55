@@ -38,19 +38,35 @@ const Profile = () => {
   const { gems } = useGems();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
-  const [alias, setAlias] = useState("sleepy_potato42");
+  const [alias] = useState(() => {
+  const saved = JSON.parse(localStorage.getItem("profile_data") || "{}");
+  return saved.alias || "sleepy_potato42";
+});
   const [currentMood, setCurrentMood] = useState("✨ manifesting");
   
-  const user = {
-    bio: "chronically online | 3am thoughts enthusiast | probably overthinking rn",
-    timezone: "GMT+5",
-    vibe: "chaotic good",
-    quirkyPrompt: {
-      prompt: "my roman empire:",
-      answer: "that one embarrassing thing from 2016"
-    },
-    interests: ["memes", "late night talks", "chaos", "overthinking", "music"],
-  };
+  const savedProfile = JSON.parse(localStorage.getItem("profile_data") || "{}");
+
+const user = {
+  bio:
+    savedProfile.bio ||
+    "chronically online | 3am thoughts enthusiast | probably overthinking rn",
+  timezone: savedProfile.timezone || "GMT+5",
+  vibe: savedProfile.vibe || "chaotic good",
+  quirkyPrompt: {
+    prompt: savedProfile.quirkyPrompt || "my roman empire:",
+    answer:
+      savedProfile.quirkyAnswer || "that one embarrassing thing from 2016",
+  },
+  interests:
+    savedProfile.interests || [
+      "memes",
+      "late night talks",
+      "chaos",
+      "overthinking",
+      "music",
+    ],
+};
+
 
   // Gen Z quirky features
   const [currentlyStatus] = useState({
