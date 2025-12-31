@@ -12,14 +12,10 @@ const Index = () => {
 
   /* 🔁 Auto redirect if already logged in */
   useEffect(() => {
-    if (existingUser) {
-      navigate("/chats");
-      return;
-    }
+  const timer = setTimeout(() => setShowSplash(false), 2200);
+  return () => clearTimeout(timer);
+}, []);
 
-    const timer = setTimeout(() => setShowSplash(false), 2200);
-    return () => clearTimeout(timer);
-  }, [existingUser, navigate]);
 
   const handleContinue = () => {
     const cleanName = name.trim();
