@@ -12,8 +12,11 @@ const Index = () => {
 
   useEffect(() => {
   const user = localStorage.getItem("currentUser");
-  if (user) navigate("/chats", { replace: true });
+  if (user) {
+    navigate("/chats", { replace: true });
+  }
 }, [navigate]);
+
 
   const handleContinue = () => {
     const cleanName = name.trim();
