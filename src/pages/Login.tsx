@@ -11,11 +11,9 @@ const Index = () => {
   const [showSplash, setShowSplash] = useState(!existingUser);
 
   useEffect(() => {
-  if (existingUser) {
-    navigate("/chats", { replace: true });
-  }
-}, [existingUser, navigate]);
-
+  const user = localStorage.getItem("currentUser");
+  if (user) navigate("/chats", { replace: true });
+}, [navigate]);
 
   const handleContinue = () => {
     const cleanName = name.trim();
