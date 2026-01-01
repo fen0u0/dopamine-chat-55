@@ -8,7 +8,8 @@ import { ChatProvider } from "@/contexts/ChatContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { StatsProvider } from "@/contexts/StatsContext";
 
-import Index from "./pages/Index";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
 import Chats from "./pages/Chats";
 import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
@@ -29,14 +30,16 @@ const App = () => (
               <Sonner />
 
               <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/chats" element={<Chats />} />
-                <Route path="/chat/:id" element={<Chat />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/confessions" element={<Confessions />} />
-                <Route path="*" element={<NotFound />} />
+                     <Route path="/" element={<Home />} />
+                     <Route path="/login" element={<Login />} />
+                     <Route path="/chats" element={<Chats />} />
+                     <Route path="/chat/:id" element={<Chat />} />
+                     <Route path="/profile" element={<Profile />} />
+                     <Route path="/settings" element={<Settings />} />
+                     <Route path="/confessions" element={<Confessions />} />
+                     <Route path="*" element={<NotFound />} />
               </Routes>
+
 
             </TooltipProvider>
           </ChatProvider>
