@@ -12,9 +12,17 @@ const Index = () => {
 
   /* 🔁 Auto redirect if already logged in */
   useEffect(() => {
+  // 🚀 If user already exists, skip everything
+  if (existingUser) {
+    navigate("/chats", { replace: true });
+    return;
+  }
+
+  // ⏳ Otherwise show splash briefly
   const timer = setTimeout(() => setShowSplash(false), 2200);
   return () => clearTimeout(timer);
-}, []);
+}, [existingUser, navigate]);
+
 
 
   const handleContinue = () => {
