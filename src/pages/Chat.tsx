@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Send, Heart, Sparkles, MoreVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ChatOptionsModal from "@/components/ChatOptionsModal";
+import { useStats } from "@/contexts/StatsContext";
 
 interface Message {
   id: string;
@@ -16,6 +17,7 @@ const Chat = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { incrementMessages } = useStats();
 
   const currentUser = localStorage.getItem("currentUser");
 
@@ -86,6 +88,7 @@ const Chat = () => {
     };
 
     saveMessages([...messages, message]);
+    incrementMessages(); // Track message sent for aura
     setNewMessage("");
     setShowEmojis(false);
   };
@@ -102,6 +105,7 @@ const Chat = () => {
         timestamp: Date.now(),
       },
     ]);
+    incrementMessages(); // Track heart sent for aura
   };
 
   return (

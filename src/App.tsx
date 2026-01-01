@@ -6,6 +6,7 @@ import { Routes, Route } from "react-router-dom";
 import { GemsProvider } from "@/contexts/GemsContext";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
+import { StatsProvider } from "@/contexts/StatsContext";
 
 import Index from "./pages/Index";
 import Chats from "./pages/Chats";
@@ -21,23 +22,25 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <GemsProvider>
       <SettingsProvider>
-        <ChatProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
+        <StatsProvider>
+          <ChatProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
 
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/chats" element={<Chats />} />
-              <Route path="/chat/:id" element={<Chat />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/confessions" element={<Confessions />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/chats" element={<Chats />} />
+                <Route path="/chat/:id" element={<Chat />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/confessions" element={<Confessions />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
 
-          </TooltipProvider>
-        </ChatProvider>
+            </TooltipProvider>
+          </ChatProvider>
+        </StatsProvider>
       </SettingsProvider>
     </GemsProvider>
   </QueryClientProvider>
