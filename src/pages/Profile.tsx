@@ -30,43 +30,46 @@ import BottomNav from "@/components/BottomNav";
 import EditProfileModal from "@/components/EditProfileModal";
 import SafetyCenterModal from "@/components/SafetyCenterModal";
 import { useGems } from "@/contexts/GemsContext";
+import { useStats } from "@/contexts/StatsContext";
 import { toast } from "sonner";
-import { generateRandomAlias, quirkyPrompts, moodOptions, vibeOptions } from "@/data/profiles";
+import { generateRandomAlias, moodOptions } from "@/data/profiles";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { gems } = useGems();
+  const { getAura, getEnergy, messagesSent, profilesOpened } = useStats();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
-  const [alias] = useState(() => {
-  const saved = JSON.parse(localStorage.getItem("profile_data") || "{}");
-  return saved.alias || "sleepy_potato42";
-});
+  const [alias, setAlias] = useState(() => {
+    const saved = JSON.parse(localStorage.getItem("profile_data") || "{}");
+    return saved.alias || "sleepy_potato42";
+  });
   const [currentMood, setCurrentMood] = useState("✨ manifesting");
   
   const savedProfile = JSON.parse(localStorage.getItem("profile_data") || "{}");
 
-const user = {
-  bio:
-    savedProfile.bio ||
-    "chronically online | 3am thoughts enthusiast | probably overthinking rn",
-  timezone: savedProfile.timezone || "GMT+5",
-  vibe: savedProfile.vibe || "chaotic good",
-  quirkyPrompt: {
-    prompt: savedProfile.quirkyPrompt || "my roman empire:",
-    answer:
-      savedProfile.quirkyAnswer || "that one embarrassing thing from 2016",
-  },
-  interests:
-    savedProfile.interests || [
-      "memes",
-      "late night talks",
-      "chaos",
-      "overthinking",
-      "music",
-    ],
-};
-
+  const user = {
+    bio:
+      savedProfile.bio ||
+      "chronically online | 3am thoughts enthusiast | probably overthinking rn",
+    timezone: savedProfile.timezone || "GMT+5",
+    vibe: savedProfile.vibe || "chaotic good",
+    activeHours: savedProfile.activeHours || "night owl",
+    replySpeed: savedProfile.replySpeed || "chaotic",
+    quirkyPrompt: {
+      prompt: savedProfile.quirkyPrompt || "my roman empire:",
+      answer:
+        savedProfile.quirkyAnswer || "that one embarrassing thing from 2016",
+    },
+    interests:
+      savedProfile.interests || [
+        "memes",
+        "late night talks",
+        "chaos",
+        "overthinking",
+        "music",
+      ],
+  };
 
   // Gen Z quirky features
   const [currentlyStatus] = useState({
@@ -75,8 +78,8 @@ const user = {
     obsessing: "random wikipedia rabbit holes"
   });
 
-  const [energyLevel] = useState(73);
-  const [auraPoints] = useState(847);
+  const auraPoints = getAura();
+  const energyLevel = getEnergy();
   
   const vibeFlags = {
     green: ["good listener", "sends memes", "no small talk"],
@@ -86,14 +89,16 @@ const user = {
   const handleRegenerateAlias = () => {
     const newAlias = generateRandomAlias();
     setAlias(newAlias);
+    const profileData = JSON.parse(localStorage.getItem("profile_data") || "{}");
+    localStorage.setItem("profile_data", JSON.stringify({ ...profileData, alias: newAlias }));
     toast.success(`you're now ${newAlias} 👻`);
   };
 
   const profileDetails = [
     { icon: <Globe className="w-4 h-4" />, label: "timezone", value: user.timezone },
     { icon: <Zap className="w-4 h-4" />, label: "current vibe", value: user.vibe },
-    { icon: <Clock className="w-4 h-4" />, label: "active hours", value: "night owl" },
-    { icon: <MessageCircle className="w-4 h-4" />, label: "reply speed", value: "chaotic" },
+    { icon: <Clock className="w-4 h-4" />, label: "active hours", value: user.activeHours },
+    { icon: <MessageCircle className="w-4 h-4" />, label: "reply speed", value: user.replySpeed },
   ];
 
   const lookingFor = [
@@ -198,8 +203,8 @@ const user = {
         >
           {[
             { label: "gems", value: gems.toString(), icon: "💎" },
-            { label: "strangers met", value: "47", icon: "👻" },
-            { label: "convos", value: "124", icon: "💬" },
+            { label: "profiles seen", value: profilesOpened.toString(), icon: "👻" },
+            { label: "messages", value: messagesSent.toString(), icon: "💬" },
           ].map((stat) => (
             <motion.div
               key={stat.label}
@@ -227,6 +232,7 @@ const user = {
               <span className="text-lg">✨</span>
             </div>
             <p className="text-xl font-bold text-foreground">{auraPoints}</p>
+            <p className="text-[10px] text-muted-foreground">+10 per message</p>
           </div>
           <div className="flex-1 section-card !p-4">
             <div className="flex items-center justify-between mb-2">
@@ -244,6 +250,7 @@ const user = {
               </div>
               <span className="text-xs text-muted-foreground">{energyLevel}%</span>
             </div>
+            <p className="text-[10px] text-muted-foreground mt-1">+5% per profile</p>
           </div>
         </motion.div>
 
@@ -362,7 +369,18 @@ const user = {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <h2 className="font-semibold text-foreground mb-4">details</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-foreground">details</h2>
+            <motion.button
+              onClick={() => setShowEditModal(true)}
+              className="text-xs text-primary flex items-center gap-1"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Edit2 className="w-3 h-3" />
+              edit
+            </motion.button>
+          </div>
           <div className="space-y-3">
             {profileDetails.map((item) => (
               <div key={item.label} className="flex items-center justify-between">

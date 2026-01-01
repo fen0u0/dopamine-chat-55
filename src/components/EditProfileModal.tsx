@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Shuffle, Ghost, Globe } from "lucide-react";
+import { X, Shuffle, Ghost, Globe, Clock, MessageCircle, Zap } from "lucide-react";
 import { toast } from "sonner";
 import {
   generateRandomAlias,
@@ -14,6 +14,9 @@ interface EditProfileModalProps {
   onClose: () => void;
 }
 
+const activeHoursOptions = ["night owl", "early bird", "all day chaos", "random bursts", "weekends only"];
+const replySpeedOptions = ["chaotic", "instant", "thoughtful", "when i remember", "depends on mood"];
+
 const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => {
   const [alias, setAlias] = useState("sleepy_potato42");
   const [bio, setBio] = useState(
@@ -22,6 +25,8 @@ const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => {
   const [timezone, setTimezone] = useState("GMT+5");
   const [selectedMood, setSelectedMood] = useState("✨ manifesting");
   const [selectedVibe, setSelectedVibe] = useState("chaotic good");
+  const [activeHours, setActiveHours] = useState("night owl");
+  const [replySpeed, setReplySpeed] = useState("chaotic");
   const [quirkyPrompt, setQuirkyPrompt] = useState(quirkyPrompts[0]);
   const [quirkyAnswer, setQuirkyAnswer] = useState(
     "that one embarrassing thing from 2016"
@@ -49,6 +54,8 @@ const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => {
     setTimezone(data.timezone ?? timezone);
     setSelectedMood(data.mood ?? selectedMood);
     setSelectedVibe(data.vibe ?? selectedVibe);
+    setActiveHours(data.activeHours ?? activeHours);
+    setReplySpeed(data.replySpeed ?? replySpeed);
     setQuirkyPrompt(data.quirkyPrompt ?? quirkyPrompt);
     setQuirkyAnswer(data.quirkyAnswer ?? quirkyAnswer);
     setInterests(data.interests ?? interests);
@@ -63,6 +70,8 @@ const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => {
       timezone,
       mood: selectedMood,
       vibe: selectedVibe,
+      activeHours,
+      replySpeed,
       quirkyPrompt,
       quirkyAnswer,
       interests,
@@ -203,6 +212,48 @@ const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => {
                   </select>
                 </div>
 
+                {/* Active Hours */}
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                    <Clock className="w-3 h-3" />
+                    active hours
+                  </label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {activeHoursOptions.map((option) => (
+                      <motion.button
+                        key={option}
+                        onClick={() => setActiveHours(option)}
+                        className={`pill ${
+                          activeHours === option ? "active" : ""
+                        }`}
+                      >
+                        {option}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Reply Speed */}
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                    <MessageCircle className="w-3 h-3" />
+                    reply speed
+                  </label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {replySpeedOptions.map((option) => (
+                      <motion.button
+                        key={option}
+                        onClick={() => setReplySpeed(option)}
+                        className={`pill ${
+                          replySpeed === option ? "active" : ""
+                        }`}
+                      >
+                        {option}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Mood */}
                 <div>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
@@ -225,7 +276,8 @@ const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => {
 
                 {/* Vibe */}
                 <div>
-                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                    <Zap className="w-3 h-3" />
                     your vibe
                   </label>
                   <div className="flex flex-wrap gap-2 mt-2">

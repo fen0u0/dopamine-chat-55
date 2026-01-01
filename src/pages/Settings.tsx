@@ -44,6 +44,7 @@ import BottomNav from "@/components/BottomNav";
 import DailyRewardsModal from "@/components/DailyRewardsModal";
 import ProfileBoostModal from "@/components/ProfileBoostModal";
 import MoodMatchModal from "@/components/MoodMatchModal";
+import AppGuideModal from "@/components/AppGuideModal";
 import { toast } from "sonner";
 import { soundManager } from "@/lib/sounds";
 import { Profile } from "@/types/profile";
@@ -58,6 +59,7 @@ const Settings = () => {
   const [showDailyRewards, setShowDailyRewards] = useState(false);
   const [showBoostModal, setShowBoostModal] = useState(false);
   const [showMoodMatch, setShowMoodMatch] = useState(false);
+  const [showAppGuide, setShowAppGuide] = useState(false);
 
   const boostTimeRemaining = isBoostActive
     ? Math.ceil((boostEndTime! - Date.now()) / 60000)
@@ -560,6 +562,7 @@ const Settings = () => {
           </div>
           <div className="space-y-1">
             {[
+              { icon: <Sparkles className="w-4 h-4" />, label: "app guide", action: () => setShowAppGuide(true) },
               { icon: <HelpCircle className="w-4 h-4" />, label: "help center", action: () => toast.info("help center coming soon") },
               { icon: <FileText className="w-4 h-4" />, label: "terms of service", action: () => toast.info("terms of service") },
               { icon: <Shield className="w-4 h-4" />, label: "privacy policy", action: () => toast.info("privacy policy") },
@@ -634,6 +637,10 @@ const Settings = () => {
         isOpen={showMoodMatch}
         onClose={() => setShowMoodMatch(false)}
         onMatch={handleMoodMatch}
+      />
+      <AppGuideModal
+        isOpen={showAppGuide}
+        onClose={() => setShowAppGuide(false)}
       />
     </div>
   );
