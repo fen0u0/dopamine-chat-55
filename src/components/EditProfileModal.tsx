@@ -12,12 +12,13 @@ import {
 interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSave?: () => void;
 }
 
 const activeHoursOptions = ["night owl", "early bird", "all day chaos", "random bursts", "weekends only"];
 const replySpeedOptions = ["chaotic", "instant", "thoughtful", "when i remember", "depends on mood"];
 
-const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => {
+const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) => {
   const [alias, setAlias] = useState("sleepy_potato42");
   const [bio, setBio] = useState(
     "chronically online | 3am thoughts enthusiast | probably overthinking rn"
@@ -80,10 +81,8 @@ const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => {
     localStorage.setItem("profile_data", JSON.stringify(profileData));
 
     toast.success("profile updated, stranger ✨");
+    onSave?.();
     onClose();
-
-    // Soft refresh so Profile.tsx syncs
-    setTimeout(() => window.location.reload(), 200);
   };
 
   const handleRegenerateAlias = () => {

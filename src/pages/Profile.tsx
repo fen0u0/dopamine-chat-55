@@ -40,13 +40,12 @@ const Profile = () => {
   const { getAura, getEnergy, messagesSent, profilesOpened } = useStats();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
-  const [alias, setAlias] = useState(() => {
-    const saved = JSON.parse(localStorage.getItem("profile_data") || "{}");
-    return saved.alias || "sleepy_potato42";
-  });
-  const [currentMood, setCurrentMood] = useState("✨ manifesting");
+  const [profileVersion, setProfileVersion] = useState(0);
   
   const savedProfile = JSON.parse(localStorage.getItem("profile_data") || "{}");
+  
+  const alias = savedProfile.alias || "sleepy_potato42";
+  const [currentMood, setCurrentMood] = useState("✨ manifesting");
 
   const user = {
     bio:
@@ -88,10 +87,14 @@ const Profile = () => {
 
   const handleRegenerateAlias = () => {
     const newAlias = generateRandomAlias();
-    setAlias(newAlias);
     const profileData = JSON.parse(localStorage.getItem("profile_data") || "{}");
     localStorage.setItem("profile_data", JSON.stringify({ ...profileData, alias: newAlias }));
+    setProfileVersion(v => v + 1);
     toast.success(`you're now ${newAlias} 👻`);
+  };
+
+  const handleProfileSave = () => {
+    setProfileVersion(v => v + 1);
   };
 
   const profileDetails = [
@@ -452,6 +455,7 @@ const Profile = () => {
       <EditProfileModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
+        onSave={handleProfileSave}
       />
       <SafetyCenterModal
         isOpen={showSafetyModal}
