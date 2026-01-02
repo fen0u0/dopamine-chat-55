@@ -70,12 +70,12 @@ const Profile = () => {
       ],
   };
 
-  // Gen Z quirky features
-  const [currentlyStatus] = useState({
-    watching: "that show everyone's talking about",
-    listening: "the same 3 songs on repeat",
-    obsessing: "random wikipedia rabbit holes"
-  });
+  // Gen Z quirky features - now editable
+  const currentlyStatus = {
+    watching: savedProfile.currentlyWatching || "that show everyone's talking about",
+    listening: savedProfile.currentlyListening || "the same 3 songs on repeat",
+    obsessing: savedProfile.currentlyObsessing || "random wikipedia rabbit holes"
+  };
 
   const auraPoints = getAura();
   const energyLevel = getEnergy();
