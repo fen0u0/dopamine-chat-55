@@ -81,9 +81,15 @@ const Profile = () => {
   const energyLevel = getEnergy();
   
   const vibeFlags = {
-    green: ["good listener", "sends memes", "no small talk"],
-    red: ["double texts", "3am overthinking", "spotify wrapped anxiety"]
+    green: savedProfile.greenFlags || ["good listener", "sends memes", "no small talk"],
+    red: savedProfile.redFlags || ["double texts", "3am overthinking", "spotify wrapped anxiety"]
   };
+  
+  const lookingFor = [
+    { icon: <Users className="w-4 h-4" />, label: "here for", value: savedProfile.hereFor || "random convos" },
+    { icon: <Ghost className="w-4 h-4" />, label: "anonymity", value: savedProfile.anonymity || "100% anon" },
+    { icon: <Sparkles className="w-4 h-4" />, label: "energy", value: savedProfile.energyPref || "unhinged welcomed" },
+  ];
 
   const handleRegenerateAlias = () => {
     const newAlias = generateRandomAlias();
@@ -104,11 +110,6 @@ const Profile = () => {
     { icon: <MessageCircle className="w-4 h-4" />, label: "reply speed", value: user.replySpeed },
   ];
 
-  const lookingFor = [
-    { icon: <Users className="w-4 h-4" />, label: "here for", value: "random convos" },
-    { icon: <Ghost className="w-4 h-4" />, label: "anonymity", value: "100% anon" },
-    { icon: <Sparkles className="w-4 h-4" />, label: "energy", value: "unhinged welcomed" },
-  ];
 
   const passions = [
     { icon: <Coffee className="w-4 h-4" />, label: "coffee" },

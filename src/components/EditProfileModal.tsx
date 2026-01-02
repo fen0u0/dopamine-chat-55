@@ -17,6 +17,9 @@ interface EditProfileModalProps {
 
 const activeHoursOptions = ["night owl", "early bird", "all day chaos", "random bursts", "weekends only"];
 const replySpeedOptions = ["chaotic", "instant", "thoughtful", "when i remember", "depends on mood"];
+const hereForOptions = ["random convos", "deep talks", "chaos", "memes", "venting", "friendship"];
+const anonymityOptions = ["100% anon", "semi-anon", "vibes only", "mystery mode"];
+const energyOptions = ["unhinged welcomed", "chill vibes", "chaotic energy", "match my energy"];
 
 const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) => {
   const [alias, setAlias] = useState("sleepy_potato42");
@@ -40,6 +43,17 @@ const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) =>
     "music",
   ]);
   const [newInterest, setNewInterest] = useState("");
+  
+  // The Vibe section
+  const [hereFor, setHereFor] = useState("random convos");
+  const [anonymity, setAnonymity] = useState("100% anon");
+  const [energyPref, setEnergyPref] = useState("unhinged welcomed");
+  
+  // Vibe Check section
+  const [greenFlags, setGreenFlags] = useState<string[]>(["good listener", "sends memes", "no small talk"]);
+  const [redFlags, setRedFlags] = useState<string[]>(["double texts", "3am overthinking", "spotify wrapped anxiety"]);
+  const [newGreenFlag, setNewGreenFlag] = useState("");
+  const [newRedFlag, setNewRedFlag] = useState("");
 
   /* 🔄 LOAD SAVED PROFILE */
   useEffect(() => {
@@ -60,6 +74,11 @@ const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) =>
     setQuirkyPrompt(data.quirkyPrompt ?? quirkyPrompt);
     setQuirkyAnswer(data.quirkyAnswer ?? quirkyAnswer);
     setInterests(data.interests ?? interests);
+    setHereFor(data.hereFor ?? hereFor);
+    setAnonymity(data.anonymity ?? anonymity);
+    setEnergyPref(data.energyPref ?? energyPref);
+    setGreenFlags(data.greenFlags ?? greenFlags);
+    setRedFlags(data.redFlags ?? redFlags);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
@@ -76,6 +95,11 @@ const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) =>
       quirkyPrompt,
       quirkyAnswer,
       interests,
+      hereFor,
+      anonymity,
+      energyPref,
+      greenFlags,
+      redFlags,
     };
 
     localStorage.setItem("profile_data", JSON.stringify(profileData));
@@ -100,6 +124,28 @@ const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) =>
 
   const removeInterest = (index: number) => {
     setInterests(interests.filter((_, i) => i !== index));
+  };
+
+  const addGreenFlag = () => {
+    if (newGreenFlag.trim() && greenFlags.length < 5) {
+      setGreenFlags([...greenFlags, newGreenFlag.trim().toLowerCase()]);
+      setNewGreenFlag("");
+    }
+  };
+
+  const removeGreenFlag = (index: number) => {
+    setGreenFlags(greenFlags.filter((_, i) => i !== index));
+  };
+
+  const addRedFlag = () => {
+    if (newRedFlag.trim() && redFlags.length < 5) {
+      setRedFlags([...redFlags, newRedFlag.trim().toLowerCase()]);
+      setNewRedFlag("");
+    }
+  };
+
+  const removeRedFlag = (index: number) => {
+    setRedFlags(redFlags.filter((_, i) => i !== index));
   };
 
   const timezones = [
@@ -294,10 +340,164 @@ const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) =>
                   </div>
                 </div>
 
+                {/* The Vibe Section */}
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                    👻 the vibe
+                  </label>
+                  
+                  <div className="mt-3 space-y-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">here for</p>
+                      <div className="flex flex-wrap gap-2">
+                        {hereForOptions.map((option) => (
+                          <motion.button
+                            key={option}
+                            onClick={() => setHereFor(option)}
+                            className={`pill ${hereFor === option ? "active" : ""}`}
+                          >
+                            {option}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">anonymity</p>
+                      <div className="flex flex-wrap gap-2">
+                        {anonymityOptions.map((option) => (
+                          <motion.button
+                            key={option}
+                            onClick={() => setAnonymity(option)}
+                            className={`pill ${anonymity === option ? "active" : ""}`}
+                          >
+                            {option}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">energy</p>
+                      <div className="flex flex-wrap gap-2">
+                        {energyOptions.map((option) => (
+                          <motion.button
+                            key={option}
+                            onClick={() => setEnergyPref(option)}
+                            className={`pill ${energyPref === option ? "active" : ""}`}
+                          >
+                            {option}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Vibe Check - Green & Red Flags */}
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                    vibe check 🚩
+                  </label>
+                  
+                  <div className="mt-3 space-y-4">
+                    {/* Green Flags */}
+                    <div>
+                      <p className="text-xs text-green-500 mb-2">🟢 green flags</p>
+                      <div className="flex flex-wrap gap-2">
+                        {greenFlags.map((flag, index) => (
+                          <motion.button
+                            key={flag}
+                            onClick={() => removeGreenFlag(index)}
+                            className="text-xs px-2 py-1 rounded-full bg-green-500/10 text-green-500 border border-green-500/20 flex items-center gap-1"
+                          >
+                            {flag}
+                            <X className="w-3 h-3" />
+                          </motion.button>
+                        ))}
+                      </div>
+                      {greenFlags.length < 5 && (
+                        <div className="flex gap-2 mt-2">
+                          <input
+                            value={newGreenFlag}
+                            onChange={(e) => setNewGreenFlag(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && addGreenFlag()}
+                            className="flex-1 px-3 py-2 rounded-xl bg-secondary border border-foreground/5 text-sm"
+                            placeholder="add green flag..."
+                          />
+                          <button
+                            onClick={addGreenFlag}
+                            className="px-3 py-2 rounded-xl bg-green-500/20 text-green-500 font-bold text-sm"
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Red Flags */}
+                    <div>
+                      <p className="text-xs text-red-500 mb-2">🔴 red flags (affectionate)</p>
+                      <div className="flex flex-wrap gap-2">
+                        {redFlags.map((flag, index) => (
+                          <motion.button
+                            key={flag}
+                            onClick={() => removeRedFlag(index)}
+                            className="text-xs px-2 py-1 rounded-full bg-red-500/10 text-red-500 border border-red-500/20 flex items-center gap-1"
+                          >
+                            {flag}
+                            <X className="w-3 h-3" />
+                          </motion.button>
+                        ))}
+                      </div>
+                      {redFlags.length < 5 && (
+                        <div className="flex gap-2 mt-2">
+                          <input
+                            value={newRedFlag}
+                            onChange={(e) => setNewRedFlag(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && addRedFlag()}
+                            className="flex-1 px-3 py-2 rounded-xl bg-secondary border border-foreground/5 text-sm"
+                            placeholder="add red flag..."
+                          />
+                          <button
+                            onClick={addRedFlag}
+                            className="px-3 py-2 rounded-xl bg-red-500/20 text-red-500 font-bold text-sm"
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Unpopular Opinion / Quirky Prompt */}
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                    🎭 unpopular opinion
+                  </label>
+                  <select
+                    value={quirkyPrompt}
+                    onChange={(e) => setQuirkyPrompt(e.target.value)}
+                    className="w-full mt-2 px-4 py-3 rounded-xl bg-secondary border border-foreground/5"
+                  >
+                    {quirkyPrompts.map((prompt) => (
+                      <option key={prompt} value={prompt}>{prompt}</option>
+                    ))}
+                  </select>
+                  <textarea
+                    value={quirkyAnswer}
+                    onChange={(e) => setQuirkyAnswer(e.target.value)}
+                    rows={2}
+                    className="w-full mt-2 px-4 py-3 rounded-xl bg-secondary border border-foreground/5 resize-none"
+                    placeholder="your answer..."
+                  />
+                </div>
+
                 {/* Bio */}
                 <div>
                   <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
-                    bio
+                    ✨ about this stranger
                   </label>
                   <textarea
                     value={bio}
