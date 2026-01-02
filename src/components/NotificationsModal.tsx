@@ -1,5 +1,9 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Heart, Star, MessageCircle, Sparkles, Bell } from "lucide-react";
+import { X, Heart, Star, MessageCircle, Sparkles, Bell, Check } from "lucide-react";
+import { useSettings } from "@/contexts/SettingsContext";
+import { soundManager } from "@/lib/sounds";
+import { toast } from "sonner";
 
 interface Notification {
   id: string;
@@ -14,7 +18,7 @@ interface NotificationsModalProps {
   onClose: () => void;
 }
 
-const notifications: Notification[] = [
+const initialNotifications: Notification[] = [
   { id: "1", type: "like", name: "Sophia", time: "2m ago", read: false },
   { id: "2", type: "superlike", name: "Luna", time: "15m ago", read: false },
   { id: "3", type: "match", name: "Zoe", time: "1h ago", read: true },
@@ -53,6 +57,24 @@ const getMessage = (type: string, name: string) => {
 };
 
 const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
+  const { sounds } = useSettings();
+  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleMarkAllRead = () => {
+    if (sounds) soundManager.playClick();
+    setNotifications(notifications.map(n => ({ ...n, read: true })));
+    toast.success("all notifications marked as read ✨");
+  };
+
+  const handleNotificationClick = (id: string) => {
+    if (sounds) soundManager.playTap();
+    setNotifications(notifications.map(n => 
+      n.id === id ? { ...n, read: true } : n
+    ));
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -76,6 +98,11 @@ const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
                 <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
                   <Bell className="w-5 h-5 text-primary" />
                   Notifications
+                  {unreadCount > 0 && (
+                    <span className="text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                      {unreadCount}
+                    </span>
+                  )}
                 </h2>
                 <button
                   onClick={onClose}
@@ -89,6 +116,7 @@ const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
                 {notifications.map((notification, index) => (
                   <motion.div
                     key={notification.id}
+                    onClick={() => handleNotificationClick(notification.id)}
                     className={`flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors cursor-pointer ${
                       !notification.read ? "bg-primary/5" : ""
                     } ${index !== notifications.length - 1 ? "border-b border-border" : ""}`}
@@ -113,7 +141,12 @@ const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
               </div>
 
               <div className="p-4 border-t border-border">
-                <button className="w-full py-2 text-sm text-primary font-medium hover:underline">
+                <button 
+                  onClick={handleMarkAllRead}
+                  disabled={unreadCount === 0}
+                  className="w-full py-2 text-sm text-primary font-medium hover:underline flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Check className="w-4 h-4" />
                   Mark all as read
                 </button>
               </div>

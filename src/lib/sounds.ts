@@ -9,6 +9,98 @@ class SoundManager {
     return this.audioContext;
   }
 
+  // Soft click sound - aesthetic pop
+  playClick() {
+    const ctx = this.getContext();
+    const now = ctx.currentTime;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(440, now + 0.05);
+    osc.type = 'sine';
+    
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    
+    osc.start(now);
+    osc.stop(now + 0.1);
+  }
+
+  // Soft tap sound
+  playTap() {
+    const ctx = this.getContext();
+    const now = ctx.currentTime;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.frequency.setValueAtTime(600, now);
+    osc.type = 'triangle';
+    
+    gain.gain.setValueAtTime(0.06, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+    
+    osc.start(now);
+    osc.stop(now + 0.05);
+  }
+
+  // Toggle switch sound
+  playToggle() {
+    const ctx = this.getContext();
+    const now = ctx.currentTime;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.frequency.setValueAtTime(520, now);
+    osc.frequency.setValueAtTime(780, now + 0.03);
+    osc.type = 'sine';
+    
+    gain.gain.setValueAtTime(0.07, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+    
+    osc.start(now);
+    osc.stop(now + 0.1);
+  }
+
+  // Notification sound
+  playNotification() {
+    const ctx = this.getContext();
+    const now = ctx.currentTime;
+    
+    const notes = [659.25, 783.99]; // E5, G5
+    
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      
+      const startTime = now + i * 0.12;
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.1, startTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.2);
+      
+      osc.start(startTime);
+      osc.stop(startTime + 0.25);
+    });
+  }
+
   // Create a sparkle/unlock sound
   playUnlock() {
     const ctx = this.getContext();
@@ -133,6 +225,50 @@ class SoundManager {
     
     osc.start(now);
     osc.stop(now + 0.5);
+  }
+
+  // Swipe sound
+  playSwipe() {
+    const ctx = this.getContext();
+    const now = ctx.currentTime;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.frequency.setValueAtTime(300, now);
+    osc.frequency.exponentialRampToValueAtTime(150, now + 0.1);
+    osc.type = 'sine';
+    
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+    
+    osc.start(now);
+    osc.stop(now + 0.15);
+  }
+
+  // Send message sound
+  playSend() {
+    const ctx = this.getContext();
+    const now = ctx.currentTime;
+    
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.frequency.setValueAtTime(440, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.06);
+    osc.type = 'sine';
+    
+    gain.gain.setValueAtTime(0.08, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    
+    osc.start(now);
+    osc.stop(now + 0.12);
   }
 }
 

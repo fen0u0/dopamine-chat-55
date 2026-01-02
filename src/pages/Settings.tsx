@@ -386,25 +386,61 @@ const Settings = () => {
           </div>
         </motion.div>
 
-        {/* Appearance */}
+        {/* Appearance & Themes */}
         <motion.div
           className="glass rounded-3xl p-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-4">
             <Palette className="w-5 h-5 text-primary" />
             <h3 className="font-semibold text-foreground">appearance</h3>
           </div>
-          <div className="divide-y divide-border/50">
-            <SettingToggle
-              icon={settings.darkMode ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-              label="dark mode"
-              description="easier on the eyes at 3am"
-              value={settings.darkMode}
-              onChange={(v) => settings.updateSetting("darkMode", v)}
-            />
+          
+          {/* Theme Selection */}
+          <div className="mb-4">
+            <p className="text-xs text-muted-foreground mb-3">choose your vibe</p>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { id: "dark", label: "dark", color: "bg-zinc-900", icon: "🌙" },
+                { id: "light", label: "light", color: "bg-zinc-100", icon: "☀️" },
+                { id: "grey", label: "grey", color: "bg-zinc-600", icon: "🌫️" },
+                { id: "void", label: "void", color: "bg-purple-950", icon: "🕳️" },
+                { id: "neon", label: "neon", color: "bg-pink-600", icon: "⚡" },
+                { id: "sunset", label: "sunset", color: "bg-orange-500", icon: "🌅" },
+                { id: "forest", label: "forest", color: "bg-emerald-700", icon: "🌲" },
+                { id: "candy", label: "candy", color: "bg-pink-400", icon: "🍬" },
+              ].map((theme) => (
+                <motion.button
+                  key={theme.id}
+                  onClick={() => {
+                    if (settings.sounds) soundManager.playClick();
+                    settings.updateSetting("theme", theme.id as any);
+                    toast.success(`${theme.label} mode activated ${theme.icon}`);
+                  }}
+                  className={`relative p-3 rounded-xl border-2 transition-all ${
+                    settings.theme === theme.id 
+                      ? "border-primary bg-primary/10" 
+                      : "border-transparent bg-secondary/50 hover:bg-secondary"
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <div className={`w-6 h-6 rounded-full ${theme.color} mx-auto mb-1`} />
+                  <p className="text-[10px] text-center text-foreground">{theme.label}</p>
+                  {settings.theme === theme.id && (
+                    <motion.div
+                      className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                    >
+                      <Check className="w-2.5 h-2.5 text-primary-foreground" />
+                    </motion.div>
+                  )}
+                </motion.button>
+              ))}
+            </div>
           </div>
         </motion.div>
 

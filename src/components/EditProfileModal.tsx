@@ -54,6 +54,11 @@ const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) =>
   const [redFlags, setRedFlags] = useState<string[]>(["double texts", "3am overthinking", "spotify wrapped anxiety"]);
   const [newGreenFlag, setNewGreenFlag] = useState("");
   const [newRedFlag, setNewRedFlag] = useState("");
+  
+  // Currently status
+  const [currentlyWatching, setCurrentlyWatching] = useState("that show everyone's talking about");
+  const [currentlyListening, setCurrentlyListening] = useState("the same 3 songs on repeat");
+  const [currentlyObsessing, setCurrentlyObsessing] = useState("random wikipedia rabbit holes");
 
   /* 🔄 LOAD SAVED PROFILE */
   useEffect(() => {
@@ -79,6 +84,9 @@ const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) =>
     setEnergyPref(data.energyPref ?? energyPref);
     setGreenFlags(data.greenFlags ?? greenFlags);
     setRedFlags(data.redFlags ?? redFlags);
+    setCurrentlyWatching(data.currentlyWatching ?? currentlyWatching);
+    setCurrentlyListening(data.currentlyListening ?? currentlyListening);
+    setCurrentlyObsessing(data.currentlyObsessing ?? currentlyObsessing);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
@@ -100,6 +108,9 @@ const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) =>
       energyPref,
       greenFlags,
       redFlags,
+      currentlyWatching,
+      currentlyListening,
+      currentlyObsessing,
     };
 
     localStorage.setItem("profile_data", JSON.stringify(profileData));
@@ -505,6 +516,42 @@ const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) =>
                     rows={3}
                     className="w-full mt-2 px-4 py-3 rounded-xl bg-secondary border border-foreground/5 resize-none"
                   />
+                </div>
+
+                {/* Currently Status */}
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                    📺 currently
+                  </label>
+                  <div className="mt-2 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">📺</span>
+                      <input
+                        value={currentlyWatching}
+                        onChange={(e) => setCurrentlyWatching(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-xl bg-secondary border border-foreground/5 text-sm"
+                        placeholder="watching..."
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">🎧</span>
+                      <input
+                        value={currentlyListening}
+                        onChange={(e) => setCurrentlyListening(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-xl bg-secondary border border-foreground/5 text-sm"
+                        placeholder="listening to..."
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">🧠</span>
+                      <input
+                        value={currentlyObsessing}
+                        onChange={(e) => setCurrentlyObsessing(e.target.value)}
+                        className="flex-1 px-3 py-2 rounded-xl bg-secondary border border-foreground/5 text-sm"
+                        placeholder="obsessing over..."
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Interests */}

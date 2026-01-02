@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
+export type ThemeMode = "dark" | "light" | "grey" | "void" | "neon" | "sunset" | "forest" | "candy";
+
 interface SettingsState {
   // Notifications
   notifications: boolean;
@@ -10,6 +12,7 @@ interface SettingsState {
   vibration: boolean;
   // Appearance
   darkMode: boolean;
+  theme: ThemeMode;
   // Privacy
   showOnline: boolean;
   showTimezone: boolean;
@@ -34,6 +37,7 @@ const defaultSettings: SettingsState = {
   sounds: true,
   vibration: true,
   darkMode: true,
+  theme: "dark",
   showOnline: true,
   showTimezone: true,
   readReceipts: true,
@@ -64,10 +68,42 @@ export const SettingsProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("cupid-settings", JSON.stringify(settings));
   }, [settings]);
 
-  // Apply dark mode to document
+  // Apply theme to document
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", settings.darkMode);
-  }, [settings.darkMode]);
+    const root = document.documentElement;
+    
+    // Remove all theme classes
+    root.classList.remove("dark", "light", "theme-grey", "theme-void", "theme-neon", "theme-sunset", "theme-forest", "theme-candy");
+    
+    // Apply the selected theme
+    switch (settings.theme) {
+      case "light":
+        root.classList.add("light");
+        break;
+      case "grey":
+        root.classList.add("dark", "theme-grey");
+        break;
+      case "void":
+        root.classList.add("dark", "theme-void");
+        break;
+      case "neon":
+        root.classList.add("dark", "theme-neon");
+        break;
+      case "sunset":
+        root.classList.add("dark", "theme-sunset");
+        break;
+      case "forest":
+        root.classList.add("dark", "theme-forest");
+        break;
+      case "candy":
+        root.classList.add("dark", "theme-candy");
+        break;
+      case "dark":
+      default:
+        root.classList.add("dark");
+        break;
+    }
+  }, [settings.theme]);
 
   const updateSetting = <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
