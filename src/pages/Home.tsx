@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, Users } from "lucide-react";
+import { Settings, Sparkles, Users } from "lucide-react";
+import { motion } from "framer-motion";
 import BottomNav from "@/components/BottomNav";
 import ChaoticGrid from "@/components/ChaoticGrid";
+import GemsBadge from "@/components/GemsBadge";
 import { profiles } from "@/data/profiles";
 
 const Home = () => {
@@ -31,24 +33,50 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Minimal Header */}
+      {/* Header with gems and settings */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/20">
-        <div className="px-6 py-4">
-          <h1 className="text-3xl font-bold gradient-text text-center tracking-tight">
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* Gems Badge - Left */}
+          <GemsBadge />
+
+          {/* Logo - Center */}
+          <motion.button
+            onClick={() => navigate("/")}
+            className="text-2xl font-bold gradient-text tracking-tight"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             vibe~
-          </h1>
-          <p className="text-xs text-muted-foreground text-center mt-1 tracking-wide">
-            tap to connect ✨
-          </p>
+          </motion.button>
+
+          {/* Settings - Right */}
+          <motion.button
+            onClick={() => navigate("/settings")}
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-secondary/50 transition-colors"
+            whileHover={{ scale: 1.1, rotate: 90 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <Settings className="w-5 h-5 text-muted-foreground" />
+          </motion.button>
         </div>
+
+        {/* Tagline */}
+        <p className="text-xs text-muted-foreground text-center pb-2 tracking-wide">
+          ✨ tap to connect
+        </p>
 
         {/* User's current mood indicator */}
         {userMood && (
           <div className="px-4 pb-3 flex justify-center">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+            <motion.div 
+              className="flex items-center gap-2 px-4 py-2 rounded-full glass border border-primary/20"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.02 }}
+            >
               <span className="text-sm">{userMood}</span>
               <span className="text-xs text-muted-foreground">· your vibe</span>
-            </div>
+            </motion.div>
           </div>
         )}
       </header>
@@ -71,9 +99,13 @@ const Home = () => {
         <ChaoticGrid userMood={userMood} />
 
         {/* Decorative footer text */}
-        <p className="text-center text-xs text-muted-foreground/40 mt-12 tracking-wide">
+        <motion.p 
+          className="text-center text-xs text-muted-foreground/40 mt-12 tracking-wide"
+          animate={{ opacity: [0.4, 0.6, 0.4] }}
+          transition={{ duration: 3, repeat: Infinity }}
+        >
           no faces, just vibes 🌙
-        </p>
+        </motion.p>
       </main>
 
       {/* Bottom Navigation */}
