@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { profiles } from "@/data/profiles";
 import { Profile } from "@/types/profile";
 import { cn } from "@/lib/utils";
 import ProfileCardExpanded from "./ProfileCardExpanded";
+import ProfileHoverCard from "./ProfileHoverCard";
 import MoodParticles from "./MoodParticles";
 import { 
-  Ghost, Cat, Sparkles, Moon, Flame, BookOpen, Theater, Gamepad2, 
-  Music, Cloud, Skull, Tornado, Coffee, Flower2, Bug, Zap
+  Ghost, Cat, Sparkles, Moon, Flame, Coffee, Cloud, Bug, Zap, Star, Heart
 } from "lucide-react";
 
 // Map profile names to icons for variety
@@ -33,6 +33,14 @@ const colorClasses = {
   3: "border-peach text-peach",
   4: "border-accent text-accent",
   5: "border-primary text-primary",
+};
+
+const glowClasses = {
+  1: "shadow-rose/30",
+  2: "shadow-coral/30",
+  3: "shadow-peach/30",
+  4: "shadow-accent/30",
+  5: "shadow-primary/30",
 };
 
 const sizeClasses = {
@@ -70,6 +78,7 @@ interface ChaoticGridProps {
 const ChaoticGrid = ({ userMood }: ChaoticGridProps) => {
   const navigate = useNavigate();
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [hoveredProfile, setHoveredProfile] = useState<string | null>(null);
 
   // Filter profiles that match the user's mood (or show all if no mood set)
   const filteredProfiles = userMood 
@@ -118,15 +127,27 @@ const ChaoticGrid = ({ userMood }: ChaoticGridProps) => {
                 }}
               >
                 {/* Avatar with ring and particles */}
-                <div className="relative">
+                <div 
+                  className="relative"
+                  onMouseEnter={() => setHoveredProfile(profile.id)}
+                  onMouseLeave={() => setHoveredProfile(null)}
+                >
+                  {/* Hover Preview Card */}
+                  <AnimatePresence>
+                    {hoveredProfile === profile.id && (
+                      <ProfileHoverCard profile={profile} />
+                    )}
+                  </AnimatePresence>
+
                   <motion.button
                     onClick={() => handleAvatarClick(profile)}
                     className={cn(
-                      "rounded-full flex items-center justify-center bg-background border-2 cursor-pointer relative z-10",
+                      "rounded-full flex items-center justify-center bg-background border-2 cursor-pointer relative z-10 transition-shadow duration-300",
                       sizeClasses[pos.size],
-                      colorClasses[colorIndex]
+                      colorClasses[colorIndex],
+                      hoveredProfile === profile.id && `shadow-lg ${glowClasses[colorIndex]}`
                     )}
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.15 }}
                     whileTap={{ scale: 0.95 }}
                     animate={{
                       y: [0, -3, 0],
@@ -143,7 +164,11 @@ const ChaoticGrid = ({ userMood }: ChaoticGridProps) => {
                     
                     {/* Online indicator */}
                     {profile.isOnline && (
-                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background z-20" />
+                      <motion.span 
+                        className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background z-20"
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      />
                     )}
                   </motion.button>
 
