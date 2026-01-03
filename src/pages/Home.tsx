@@ -1,159 +1,91 @@
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Flame, Sparkles, Gem, MapPin, Gift } from "lucide-react";
+import FilterPill from "@/components/FilterPill";
+import BottomNav from "@/components/BottomNav";
+import ChaoticGrid from "@/components/ChaoticGrid";
+import DailyRewardsModal from "@/components/DailyRewardsModal";
+
+const filters = [
+  { label: "All", icon: undefined },
+  { label: "Hot", icon: Flame },
+  { label: "New", icon: Sparkles },
+  { label: "Premium", icon: Gem },
+  { label: "Near", icon: MapPin },
+];
 
 const Home = () => {
   const navigate = useNavigate();
-  const [showIntro, setShowIntro] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [showRewards, setShowRewards] = useState(false);
 
-  // 🎬 Intro animation (ONLY ONCE PER VISIT)
+  // Check if user is logged in
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowIntro(false);
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, []);
+    const user = localStorage.getItem("currentUser");
+    if (!user) {
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-hidden">
-      <AnimatePresence mode="wait">
-        {showIntro ? (
-          /* ================= INTRO SPLASH ================= */
-          <motion.div
-            key="intro"
-            className="min-h-screen flex items-center justify-center"
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.15, filter: "blur(12px)" }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+    <div className="min-h-screen bg-background pb-24">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/30">
+        <div className="px-4 py-4">
+          <h1 className="text-2xl font-bold gradient-text text-center mb-1">
+            vibe~
+          </h1>
+          <p className="text-xs text-muted-foreground text-center">
+            find your people ✨
+          </p>
+        </div>
+
+        {/* Daily Reward Banner */}
+        <div className="mx-4 mb-3">
+          <button 
+            onClick={() => setShowRewards(true)}
+            className="w-full bg-gradient-to-r from-coral/20 via-rose/20 to-primary/20 border border-coral/30 rounded-xl px-4 py-3 flex items-center gap-3 hover:border-coral/50 transition-all group"
           >
-            <motion.h1
-              className="text-7xl font-bold gradient-text"
-              animate={{
-                scale: [1, 1.05, 1],
-                textShadow: [
-                  "0 0 0px hsl(var(--primary))",
-                  "0 0 40px hsl(var(--primary))",
-                  "0 0 0px hsl(var(--primary))",
-                ],
-              }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-            >
-              vibe~
-            </motion.h1>
-          </motion.div>
-        ) : (
-          /* ================= REAL HOMEPAGE ================= */
-          <motion.main
-            key="home"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            {/* ---------- HERO ---------- */}
-            <section className="min-h-screen flex flex-col items-center justify-center text-center px-6">
-              <motion.h1
-                className="text-6xl md:text-7xl font-bold gradient-text"
-                initial={{ y: 40, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.6 }}
-              >
-                vibe~
-              </motion.h1>
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-coral to-rose flex items-center justify-center">
+              <Gift className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-sm font-medium text-foreground group-hover:text-coral transition-colors">
+              Claim Daily Reward!
+            </span>
+          </button>
+        </div>
 
-              <motion.p
-                className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-              >
-                a place to talk freely, connect deeply,  
-                and just exist without filters.
-              </motion.p>
+        {/* Filter Pills */}
+        <div className="px-4 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
+          {filters.map((filter) => (
+            <FilterPill
+              key={filter.label}
+              label={filter.label}
+              icon={filter.icon}
+              active={activeFilter === filter.label}
+              onClick={() => setActiveFilter(filter.label)}
+            />
+          ))}
+        </div>
+      </header>
 
-              <motion.div
-                className="mt-10 flex gap-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <button
-                  onClick={() => navigate("/login")}
-                  className="px-8 py-3 rounded-xl font-semibold
-                    bg-primary text-primary-foreground
-                    hover:scale-105 transition"
-                >
-                  Get Started
-                </button>
+      {/* Main Content - Chaotic Grid */}
+      <main className="px-4 pt-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-5 h-5 text-coral" />
+          <h2 className="text-lg font-semibold text-foreground">
+            vibing rn
+          </h2>
+        </div>
 
-                <button
-                  onClick={() => navigate("/confessions")}
-                  className="px-8 py-3 rounded-xl font-semibold
-                    bg-secondary text-foreground
-                    hover:scale-105 transition"
-                >
-                  Explore
-                </button>
-              </motion.div>
-            </section>
+        <ChaoticGrid />
+      </main>
 
-            {/* ---------- FEATURES ---------- */}
-            <section className="py-24 px-6 max-w-6xl mx-auto">
-              <h2 className="text-4xl font-bold text-center mb-12">
-                why people love vibe~
-              </h2>
+      {/* Bottom Navigation */}
+      <BottomNav />
 
-              <div className="grid md:grid-cols-3 gap-8">
-                {[
-                  {
-                    title: "real conversations",
-                    desc: "no fake profiles. no pressure. just humans talking.",
-                  },
-                  {
-                    title: "privacy-first",
-                    desc: "your chats stay yours. always.",
-                  },
-                  {
-                    title: "mood-based vibes",
-                    desc: "talk when you want. disappear when you need.",
-                  },
-                ].map((f, i) => (
-                  <motion.div
-                    key={i}
-                    className="p-6 rounded-2xl bg-secondary/50 border border-foreground/5"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.15 }}
-                  >
-                    <h3 className="text-xl font-semibold mb-2">{f.title}</h3>
-                    <p className="text-muted-foreground">{f.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </section>
-
-            {/* ---------- FINAL CTA ---------- */}
-            <section className="py-32 text-center px-6">
-              <h2 className="text-4xl font-bold mb-6">
-                ready to find your vibe?
-              </h2>
-              <p className="text-muted-foreground mb-10">
-                takes less than 10 seconds to start.
-              </p>
-              <button
-                onClick={() => navigate("/login")}
-                className="px-10 py-4 rounded-2xl text-lg font-semibold
-                  bg-primary text-primary-foreground
-                  hover:scale-105 transition"
-              >
-                Join vibe~
-              </button>
-            </section>
-          </motion.main>
-        )}
-      </AnimatePresence>
+      {/* Daily Rewards Modal */}
+      <DailyRewardsModal isOpen={showRewards} onClose={() => setShowRewards(false)} />
     </div>
   );
 };
