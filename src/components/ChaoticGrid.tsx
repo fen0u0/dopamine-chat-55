@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { profiles, moodOptions } from "@/data/profiles";
+import { profiles } from "@/data/profiles";
 import { Profile } from "@/types/profile";
 import { cn } from "@/lib/utils";
 import ProfileCardExpanded from "./ProfileCardExpanded";
+import MoodParticles from "./MoodParticles";
 import { 
   Ghost, Cat, Sparkles, Moon, Flame, BookOpen, Theater, Gamepad2, 
   Music, Cloud, Skull, Tornado, Coffee, Flower2, Bug, Zap
@@ -62,26 +63,21 @@ const gridPositions = [
   { size: "sm" as const },
 ];
 
-// Extract unique moods from profiles
-const getUniqueMoods = () => {
-  const moods = new Set<string>();
-  profiles.forEach(p => {
-    if (p.mood) moods.add(p.mood);
-  });
-  return ["all", ...Array.from(moods)];
-};
-
 interface ChaoticGridProps {
-  selectedMood?: string;
+  userMood?: string;
 }
 
-const ChaoticGrid = ({ selectedMood = "all" }: ChaoticGridProps) => {
+const ChaoticGrid = ({ userMood }: ChaoticGridProps) => {
   const navigate = useNavigate();
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
 
-  const filteredProfiles = selectedMood === "all" 
-    ? profiles 
-    : profiles.filter(p => p.mood === selectedMood);
+  // Filter profiles that match the user's mood (or show all if no mood set)
+  const filteredProfiles = userMood 
+    ? profiles.filter(p => p.mood === userMood)
+    : profiles;
+
+  // If no matches, show all profiles
+  const displayProfiles = filteredProfiles.length > 0 ? filteredProfiles : profiles;
 
   const handleAvatarClick = (profile: Profile) => {
     setSelectedProfile(profile);
@@ -101,7 +97,7 @@ const ChaoticGrid = ({ selectedMood = "all" }: ChaoticGridProps) => {
     <>
       <div className="grid grid-cols-3 gap-6 px-2">
         <AnimatePresence mode="popLayout">
-          {filteredProfiles.slice(0, 12).map((profile, index) => {
+          {displayProfiles.slice(0, 12).map((profile, index) => {
             const pos = gridPositions[index % gridPositions.length];
             const colorIndex = ((index % 5) + 1) as 1 | 2 | 3 | 4 | 5;
             const IconComponent = profileIcons[profile.name] || Ghost;
@@ -121,34 +117,39 @@ const ChaoticGrid = ({ selectedMood = "all" }: ChaoticGridProps) => {
                   damping: 15,
                 }}
               >
-                {/* Avatar with ring */}
-                <motion.button
-                  onClick={() => handleAvatarClick(profile)}
-                  className={cn(
-                    "rounded-full flex items-center justify-center bg-background border-2 cursor-pointer relative",
-                    sizeClasses[pos.size],
-                    colorClasses[colorIndex]
-                  )}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  animate={{
-                    y: [0, -3, 0],
-                  }}
-                  transition={{
-                    y: {
-                      duration: 2 + (index % 3) * 0.5,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    },
-                  }}
-                >
-                  <IconComponent className={cn(iconSizes[pos.size], "opacity-80")} />
-                  
-                  {/* Online indicator */}
-                  {profile.isOnline && (
-                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
-                  )}
-                </motion.button>
+                {/* Avatar with ring and particles */}
+                <div className="relative">
+                  <motion.button
+                    onClick={() => handleAvatarClick(profile)}
+                    className={cn(
+                      "rounded-full flex items-center justify-center bg-background border-2 cursor-pointer relative z-10",
+                      sizeClasses[pos.size],
+                      colorClasses[colorIndex]
+                    )}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    animate={{
+                      y: [0, -3, 0],
+                    }}
+                    transition={{
+                      y: {
+                        duration: 2 + (index % 3) * 0.5,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      },
+                    }}
+                  >
+                    <IconComponent className={cn(iconSizes[pos.size], "opacity-80")} />
+                    
+                    {/* Online indicator */}
+                    {profile.isOnline && (
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background z-20" />
+                    )}
+                  </motion.button>
+
+                  {/* Mood Particles */}
+                  <MoodParticles mood={profile.mood} />
+                </div>
 
                 {/* Username */}
                 <span className="text-xs text-muted-foreground font-medium truncate max-w-full">
@@ -168,10 +169,11 @@ const ChaoticGrid = ({ selectedMood = "all" }: ChaoticGridProps) => {
       </div>
 
       {/* Empty state */}
-      {filteredProfiles.length === 0 && (
-        <div className="text-center py-12">
-          <Ghost className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-          <p className="text-sm text-muted-foreground">no one vibing with this mood rn</p>
+      {filteredProfiles.length === 0 && userMood && (
+        <div className="text-center py-8">
+          <Ghost className="w-10 h-10 mx-auto text-muted-foreground/30 mb-2" />
+          <p className="text-xs text-muted-foreground">no one else vibing like you rn</p>
+          <p className="text-xs text-muted-foreground/60 mt-1">showing everyone instead ✨</p>
         </div>
       )}
 
@@ -187,5 +189,4 @@ const ChaoticGrid = ({ selectedMood = "all" }: ChaoticGridProps) => {
   );
 };
 
-export { getUniqueMoods };
 export default ChaoticGrid;

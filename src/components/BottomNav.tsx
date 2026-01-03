@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, User } from "lucide-react";
+import { Heart, MessageCircle, User, Ghost } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { matches } from "@/data/profiles";
@@ -20,6 +20,7 @@ const BottomNav = () => {
   const navItems: NavItem[] = [
     { icon: <Heart className="w-6 h-6" />, label: "home", path: "/" },
     { icon: <MessageCircle className="w-6 h-6" />, label: "chats", path: "/chats", badge: unreadCount },
+    { icon: <Ghost className="w-6 h-6" />, label: "confess", path: "/confessions" },
     { icon: <User className="w-6 h-6" />, label: "profile", path: "/profile" },
   ];
 
@@ -33,7 +34,7 @@ const BottomNav = () => {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                "nav-item relative px-6 py-1",
+                "nav-item relative px-4 py-1",
                 isActive && "active"
               )}
               whileHover={{ scale: 1.05 }}

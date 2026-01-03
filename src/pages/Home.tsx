@@ -1,22 +1,33 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Users } from "lucide-react";
 import BottomNav from "@/components/BottomNav";
-import ChaoticGrid, { getUniqueMoods } from "@/components/ChaoticGrid";
-import { cn } from "@/lib/utils";
+import ChaoticGrid from "@/components/ChaoticGrid";
+import { profiles } from "@/data/profiles";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [selectedMood, setSelectedMood] = useState("all");
-  const moods = getUniqueMoods();
+  const [userMood, setUserMood] = useState<string | undefined>(undefined);
 
-  // Check if user is logged in
+  // Check if user is logged in and get their mood
   useEffect(() => {
     const user = localStorage.getItem("currentUser");
     if (!user) {
       navigate("/login", { replace: true });
+      return;
+    }
+
+    // Get user's mood from profile settings
+    const savedMood = localStorage.getItem("userMood");
+    if (savedMood) {
+      setUserMood(savedMood);
     }
   }, [navigate]);
+
+  // Count matches for current mood
+  const matchCount = userMood 
+    ? profiles.filter(p => p.mood === userMood).length 
+    : profiles.length;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -31,25 +42,15 @@ const Home = () => {
           </p>
         </div>
 
-        {/* Mood Filter Pills */}
-        <div className="px-4 pb-4 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2 w-max">
-            {moods.map((mood) => (
-              <button
-                key={mood}
-                onClick={() => setSelectedMood(mood)}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all",
-                  selectedMood === mood
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                )}
-              >
-                {mood === "all" ? "✨ all vibes" : mood}
-              </button>
-            ))}
+        {/* User's current mood indicator */}
+        {userMood && (
+          <div className="px-4 pb-3 flex justify-center">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+              <span className="text-sm">{userMood}</span>
+              <span className="text-xs text-muted-foreground">· your vibe</span>
+            </div>
           </div>
-        </div>
+        )}
       </header>
 
       {/* Main Content */}
@@ -58,12 +59,16 @@ const Home = () => {
         <div className="flex items-center gap-2 mb-6 px-2">
           <Sparkles className="w-4 h-4 text-coral" />
           <span className="text-sm font-medium text-muted-foreground">
-            {selectedMood === "all" ? "vibing rn" : selectedMood}
+            {userMood ? "matching your vibe" : "vibing rn"}
           </span>
+          <div className="flex items-center gap-1 ml-auto text-xs text-muted-foreground/60">
+            <Users className="w-3 h-3" />
+            <span>{matchCount}</span>
+          </div>
         </div>
 
-        {/* Chaotic Grid */}
-        <ChaoticGrid selectedMood={selectedMood} />
+        {/* Chaotic Grid - filtered by user's mood */}
+        <ChaoticGrid userMood={userMood} />
 
         {/* Decorative footer text */}
         <p className="text-center text-xs text-muted-foreground/40 mt-12 tracking-wide">
