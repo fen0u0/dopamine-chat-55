@@ -2,32 +2,35 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
-const Index = () => {
+const Login = () => {
   const navigate = useNavigate();
-
-  const existingUser = localStorage.getItem("currentUser")?.trim() || null;
-
   const [name, setName] = useState("");
-  const [showSplash, setShowSplash] = useState(!existingUser);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-  const user = localStorage.getItem("currentUser");
-  if (user) {
-    navigate("/chats", { replace: true });
-  }
-}, [navigate]);
+    const user = localStorage.getItem("currentUser");
+    if (user) {
+      navigate("/", { replace: true });
+      return;
+    }
 
+    // Show splash for 2 seconds then show form
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   const handleContinue = () => {
     const cleanName = name.trim();
     if (!cleanName) return;
 
-    // Optional: normalize casing (comment out if you want raw input)
     const normalizedName =
       cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
 
     localStorage.setItem("currentUser", normalizedName);
-    navigate("/chats");
+    navigate("/");
   };
 
   return (
@@ -140,4 +143,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Login;
