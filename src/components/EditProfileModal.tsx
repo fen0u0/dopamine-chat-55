@@ -114,6 +114,8 @@ const EditProfileModal = ({ isOpen, onClose, onSave }: EditProfileModalProps) =>
     };
 
     localStorage.setItem("profile_data", JSON.stringify(profileData));
+    // Also save mood separately for mood-matching on home page
+    localStorage.setItem("userMood", selectedMood);
 
     toast.success("profile updated, stranger ✨");
     onSave?.();
