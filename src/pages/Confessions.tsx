@@ -41,11 +41,25 @@ const Confessions = () => {
   const [selectedCategory, setSelectedCategory] = useState<ConfessionCategory | "all">("all");
   const [sortBy, setSortBy] = useState<SortOption>("hot");
 
+  // Get current user identity for filtering "mine"
+  const currentUser = useMemo(() => getUserAnonIdentity(), []);
+
   // Filter and sort confessions
   const displayedConfessions = useMemo(() => {
     let filtered = selectedCategory === "all"
       ? confessions
       : confessions.filter((c) => c.category === selectedCategory);
+
+    // Filter for "mine" sort option
+    if (sortBy === "mine") {
+      filtered = filtered.filter(
+        (c) => c.anonName === currentUser.name && c.avatar === currentUser.avatar
+      );
+      // Sort by newest for own posts
+      return [...filtered].sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+    }
 
     // Sort based on selected option
     switch (sortBy) {
@@ -55,20 +69,14 @@ const Confessions = () => {
           const bTotal = Object.values(b.reactions).reduce((sum, v) => sum + v, 0) + b.flags.red + b.flags.green;
           return bTotal - aTotal;
         });
-      case "chaotic":
-        return [...filtered].sort((a, b) => b.flags.red - a.flags.red);
-      case "valid":
-        return [...filtered].sort((a, b) => b.flags.green - a.flags.green);
       case "new":
         return [...filtered].sort((a, b) => 
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
-      case "random":
-        return [...filtered].sort(() => Math.random() - 0.5);
       default:
         return filtered;
     }
-  }, [confessions, selectedCategory, sortBy]);
+  }, [confessions, selectedCategory, sortBy, currentUser]);
 
   // Stats
   const totalConfessions = confessions.length;
