@@ -1,7 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, Flag, ChevronDown, ChevronUp, Send, MoreHorizontal } from "lucide-react";
+import { MessageCircle, Flag, ChevronDown, ChevronUp, Send, MoreHorizontal, Trash2, AlertTriangle } from "lucide-react";
 import { Confession, Comment, formatTimeAgo, getUserAnonIdentity } from "@/lib/confessionData";
+import { toast } from "sonner";
 
 const CATEGORY_STYLES: Record<string, string> = {
   crush: "bg-pink-500/20 text-pink-400",
@@ -41,6 +42,7 @@ interface ConfessionCardProps {
   onAddComment: (confessionId: string, comment: Comment) => void;
   onReactToComment: (confessionId: string, commentId: string, reaction: keyof Comment["reactions"]) => void;
   onFlag: (confessionId: string, flag: "red" | "green") => void;
+  onDeleteComment: (confessionId: string, commentId: string) => void;
 }
 
 export const ConfessionCard = ({
@@ -49,12 +51,26 @@ export const ConfessionCard = ({
   onAddComment,
   onReactToComment,
   onFlag,
+  onDeleteComment,
 }: ConfessionCardProps) => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const currentUser = useMemo(() => getUserAnonIdentity(), []);
   const isOwnConfession = confession.anonName === currentUser.name && confession.avatar === currentUser.avatar;
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleAddComment = () => {
     if (!newComment.trim()) return;
@@ -69,6 +85,17 @@ export const ConfessionCard = ({
     };
     onAddComment(confession.id, comment);
     setNewComment("");
+  };
+
+  const handleDeleteComment = (commentId: string) => {
+    onDeleteComment(confession.id, commentId);
+    setOpenMenuId(null);
+    toast.success("comment deleted 🗑️");
+  };
+
+  const handleReportComment = () => {
+    setOpenMenuId(null);
+    toast.success("comment reported, thanks for keeping it safe 🛡️");
   };
 
   const totalReactions = Object.values(confession.reactions).reduce((a, b) => a + b, 0);
@@ -233,9 +260,42 @@ export const ConfessionCard = ({
                             )}
                             <span className="text-xs text-muted-foreground">· {formatTimeAgo(comment.timestamp)}</span>
                           </div>
-                          <button className="p-1 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </button>
+                          <div className="relative" ref={openMenuId === comment.id ? menuRef : null}>
+                            <button
+                              onClick={() => setOpenMenuId(openMenuId === comment.id ? null : comment.id)}
+                              className="p-1 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              <MoreHorizontal className="w-4 h-4" />
+                            </button>
+                            <AnimatePresence>
+                              {openMenuId === comment.id && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.95 }}
+                                  className="absolute right-0 top-8 z-10 bg-background border border-border rounded-lg shadow-lg overflow-hidden min-w-[120px]"
+                                >
+                                  {isOwnComment ? (
+                                    <button
+                                      onClick={() => handleDeleteComment(comment.id)}
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                      delete
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={handleReportComment}
+                                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-orange-400 hover:bg-orange-500/10 transition-colors"
+                                    >
+                                      <AlertTriangle className="w-4 h-4" />
+                                      report
+                                    </button>
+                                  )}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
                         </div>
                         <p className="text-sm text-foreground/90 mt-1 break-words">{comment.text}</p>
                         <div className="flex gap-1.5 mt-2">

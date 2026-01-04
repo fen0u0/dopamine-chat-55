@@ -190,6 +190,18 @@ const Confessions = () => {
     );
   };
 
+  const handleDeleteComment = (confessionId: string, commentId: string) => {
+    setConfessions((prev) =>
+      prev.map((conf) => {
+        if (conf.id !== confessionId) return conf;
+        return {
+          ...conf,
+          comments: conf.comments.filter((comment) => comment.id !== commentId),
+        };
+      })
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <Header title="confessions" showLogo={false} />
@@ -219,6 +231,7 @@ const Confessions = () => {
                 onAddComment={handleAddComment}
                 onReactToComment={handleReactToComment}
                 onFlag={handleFlagConfession}
+                onDeleteComment={handleDeleteComment}
               />
             ))
           )}
