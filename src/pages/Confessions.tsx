@@ -204,21 +204,21 @@ const Confessions = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-24">
       <Header title="confessions" showLogo={false} />
       
-      <main className="max-w-lg mx-auto px-4 py-4 pt-20 space-y-4">
+      <main className="max-w-2xl mx-auto px-4 py-6 pt-24 space-y-5">
         {/* Stats bar */}
-        <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <span>📝</span>
-            <span className="font-semibold text-foreground">{totalConfessions}</span>
+        <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="text-lg">📝</span>
+            <span className="font-semibold text-foreground text-base">{totalConfessions}</span>
             <span>confessions</span>
           </span>
           <span className="text-border">•</span>
-          <span className="flex items-center gap-1">
-            <span>💫</span>
-            <span className="font-semibold text-foreground">{totalReactions}</span>
+          <span className="flex items-center gap-1.5">
+            <span className="text-lg">💫</span>
+            <span className="font-semibold text-foreground text-base">{totalReactions}</span>
             <span>reactions</span>
           </span>
         </div>
@@ -232,11 +232,11 @@ const Confessions = () => {
 
         <SortBar selected={sortBy} onSelect={setSortBy} />
         
-        <div className="space-y-4">
+        <div className="space-y-5">
           {displayedConfessions.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-lg">no tea in this category yet 🫖</p>
-              <p className="text-sm mt-1">be the first to spill!</p>
+            <div className="text-center py-16 text-muted-foreground">
+              <p className="text-xl">no tea in this category yet 🫖</p>
+              <p className="text-base mt-2">be the first to spill!</p>
             </div>
           ) : (
             displayedConfessions.map((confession) => (
