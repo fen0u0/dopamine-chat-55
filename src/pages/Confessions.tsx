@@ -78,12 +78,6 @@ const Confessions = () => {
     }
   }, [confessions, selectedCategory, sortBy, currentUser]);
 
-  // Stats
-  const totalConfessions = confessions.length;
-  const totalReactions = confessions.reduce((sum, c) => 
-    sum + Object.values(c.reactions).reduce((s, v) => s + v, 0), 0
-  );
-
   const handleAddConfession = (text: string, category: ConfessionCategory) => {
     const { name, avatar } = getUserAnonIdentity();
     const newConfession: Confession = {
@@ -201,21 +195,6 @@ const Confessions = () => {
       <Header title="confessions" showLogo={false} />
       
       <main className="max-w-2xl mx-auto px-4 py-6 pt-24 space-y-5">
-        {/* Stats bar */}
-        <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <span className="text-lg">📝</span>
-            <span className="font-semibold text-foreground text-base">{totalConfessions}</span>
-            <span>confessions</span>
-          </span>
-          <span className="text-border">•</span>
-          <span className="flex items-center gap-1.5">
-            <span className="text-lg">💫</span>
-            <span className="font-semibold text-foreground text-base">{totalReactions}</span>
-            <span>reactions</span>
-          </span>
-        </div>
-
         <ConfessionInput onSubmit={handleAddConfession} />
         
         <CategoryFilter

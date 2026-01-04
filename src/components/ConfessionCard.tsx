@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, Flag, ChevronDown, ChevronUp, Send } from "lucide-react";
+import { MessageCircle, Flag, ChevronDown, ChevronUp, Send, MoreHorizontal } from "lucide-react";
 import { Confession, Comment, formatTimeAgo, getUserAnonIdentity } from "@/lib/confessionData";
 
 const CATEGORY_STYLES: Record<string, string> = {
@@ -221,16 +221,21 @@ export const ConfessionCard = ({
                         {comment.avatar}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-foreground">
-                            {getDisplayName(comment.anonName, comment.avatar)}
-                          </span>
-                          {isOwnComment && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium">
-                              you
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-foreground">
+                              {getDisplayName(comment.anonName, comment.avatar)}
                             </span>
-                          )}
-                          <span className="text-xs text-muted-foreground">· {formatTimeAgo(comment.timestamp)}</span>
+                            {isOwnComment && (
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium">
+                                you
+                              </span>
+                            )}
+                            <span className="text-xs text-muted-foreground">· {formatTimeAgo(comment.timestamp)}</span>
+                          </div>
+                          <button className="p-1 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </button>
                         </div>
                         <p className="text-sm text-foreground/90 mt-1 break-words">{comment.text}</p>
                         <div className="flex gap-1.5 mt-2">
