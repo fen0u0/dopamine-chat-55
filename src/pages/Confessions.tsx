@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { ConfessionInput } from "@/components/ConfessionInput";
@@ -13,8 +13,31 @@ import {
   generateAnonIdentity,
 } from "@/lib/confessionData";
 
+const STORAGE_KEY = "vibe_confessions";
+
+const loadConfessions = (): Confession[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error("Failed to load confessions:", e);
+  }
+  return INITIAL_CONFESSIONS;
+};
+
 const Confessions = () => {
-  const [confessions, setConfessions] = useState<Confession[]>(INITIAL_CONFESSIONS);
+  const [confessions, setConfessions] = useState<Confession[]>(loadConfessions);
+
+  // Persist confessions to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(confessions));
+    } catch (e) {
+      console.error("Failed to save confessions:", e);
+    }
+  }, [confessions]);
   const [selectedCategory, setSelectedCategory] = useState<ConfessionCategory | "all">("all");
   const [sortBy, setSortBy] = useState<SortOption>("hot");
 
