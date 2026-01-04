@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, Flag, ChevronDown, ChevronUp, Send } from "lucide-react";
 import { Confession, Comment, formatTimeAgo, getUserAnonIdentity } from "@/lib/confessionData";
@@ -53,6 +53,9 @@ export const ConfessionCard = ({
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
 
+  const currentUser = useMemo(() => getUserAnonIdentity(), []);
+  const isOwnConfession = confession.anonName === currentUser.name && confession.avatar === currentUser.avatar;
+
   const handleAddComment = () => {
     if (!newComment.trim()) return;
     const { name, avatar } = getUserAnonIdentity();
@@ -70,6 +73,13 @@ export const ConfessionCard = ({
 
   const totalReactions = Object.values(confession.reactions).reduce((a, b) => a + b, 0);
 
+  const getDisplayName = (name: string, avatar: string) => {
+    if (name === currentUser.name && avatar === currentUser.avatar) {
+      return name;
+    }
+    return "anon";
+  };
+
   return (
     <motion.div
       className="glass rounded-2xl p-5"
@@ -84,7 +94,14 @@ export const ConfessionCard = ({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium text-foreground">{confession.anonName}</span>
+            <span className="text-sm font-medium text-foreground">
+              {getDisplayName(confession.anonName, confession.avatar)}
+            </span>
+            {isOwnConfession && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/20 text-primary font-medium">
+                you
+              </span>
+            )}
             <span className={`text-xs px-2 py-0.5 rounded-full ${CATEGORY_STYLES[confession.category]}`}>
               {CATEGORY_EMOJIS[confession.category]} {confession.category}
             </span>
@@ -191,42 +208,52 @@ export const ConfessionCard = ({
                 </div>
 
                 {/* Comments list */}
-                {confession.comments.map((comment) => (
-                  <motion.div
-                    key={comment.id}
-                    className="flex gap-3 pl-3 border-l-2 border-border/50"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-base">
-                      {comment.avatar}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-foreground">{comment.anonName}</span>
-                        <span className="text-xs text-muted-foreground">· {formatTimeAgo(comment.timestamp)}</span>
+                {confession.comments.map((comment) => {
+                  const isOwnComment = comment.anonName === currentUser.name && comment.avatar === currentUser.avatar;
+                  return (
+                    <motion.div
+                      key={comment.id}
+                      className="flex gap-3 pl-3 border-l-2 border-border/50"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                    >
+                      <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-base">
+                        {comment.avatar}
                       </div>
-                      <p className="text-sm text-foreground/90 mt-1 break-words">{comment.text}</p>
-                      <div className="flex gap-1.5 mt-2">
-                        {COMMENT_REACTIONS.map(({ key, emoji }) => (
-                          <motion.button
-                            key={key}
-                            onClick={() => onReactToComment(confession.id, comment.id, key)}
-                            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
-                              comment.userReacted?.[key]
-                                ? "bg-primary/20 text-primary"
-                                : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
-                            }`}
-                            whileTap={{ scale: 0.9 }}
-                          >
-                            <span>{emoji}</span>
-                            <span>{comment.reactions[key]}</span>
-                          </motion.button>
-                        ))}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-foreground">
+                            {getDisplayName(comment.anonName, comment.avatar)}
+                          </span>
+                          {isOwnComment && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/20 text-primary font-medium">
+                              you
+                            </span>
+                          )}
+                          <span className="text-xs text-muted-foreground">· {formatTimeAgo(comment.timestamp)}</span>
+                        </div>
+                        <p className="text-sm text-foreground/90 mt-1 break-words">{comment.text}</p>
+                        <div className="flex gap-1.5 mt-2">
+                          {COMMENT_REACTIONS.map(({ key, emoji }) => (
+                            <motion.button
+                              key={key}
+                              onClick={() => onReactToComment(confession.id, comment.id, key)}
+                              className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
+                                comment.userReacted?.[key]
+                                  ? "bg-primary/20 text-primary"
+                                  : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
+                              }`}
+                              whileTap={{ scale: 0.9 }}
+                            >
+                              <span>{emoji}</span>
+                              <span>{comment.reactions[key]}</span>
+                            </motion.button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </div>
             </motion.div>
           )}
