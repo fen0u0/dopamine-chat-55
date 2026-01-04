@@ -10,11 +10,10 @@ import {
   Comment,
   ConfessionCategory,
   INITIAL_CONFESSIONS,
-  generateAnonIdentity,
+  getUserAnonIdentity,
 } from "@/lib/confessionData";
 
 const STORAGE_KEY = "vibe_confessions";
-const USER_ANON_KEY = "vibe_user_anon";
 
 const loadConfessions = (): Confession[] => {
   try {
@@ -26,20 +25,6 @@ const loadConfessions = (): Confession[] => {
     console.error("Failed to load confessions:", e);
   }
   return INITIAL_CONFESSIONS;
-};
-
-const getUserAnonIdentity = (): { name: string; avatar: string } => {
-  try {
-    const stored = localStorage.getItem(USER_ANON_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (e) {
-    console.error("Failed to load user anon identity:", e);
-  }
-  const identity = generateAnonIdentity();
-  localStorage.setItem(USER_ANON_KEY, JSON.stringify(identity));
-  return identity;
 };
 
 const Confessions = () => {
