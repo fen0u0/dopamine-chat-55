@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, Flag, ChevronDown, ChevronUp, Send } from "lucide-react";
-import { Confession, Comment, formatTimeAgo, generateAnonIdentity } from "@/lib/confessionData";
+import { Confession, Comment, formatTimeAgo, getUserAnonIdentity } from "@/lib/confessionData";
 
 const CATEGORY_STYLES: Record<string, string> = {
   crush: "bg-pink-500/20 text-pink-400",
@@ -55,7 +55,7 @@ export const ConfessionCard = ({
 
   const handleAddComment = () => {
     if (!newComment.trim()) return;
-    const { name, avatar } = generateAnonIdentity();
+    const { name, avatar } = getUserAnonIdentity();
     const comment: Comment = {
       id: `com-${Date.now()}`,
       anonName: name,

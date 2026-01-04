@@ -53,6 +53,21 @@ export const generateAnonIdentity = () => {
   return { name, avatar };
 };
 
+export const getUserAnonIdentity = (): { name: string; avatar: string } => {
+  const USER_ANON_KEY = "vibe_user_anon";
+  try {
+    const stored = localStorage.getItem(USER_ANON_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error("Failed to load user anon identity:", e);
+  }
+  const identity = generateAnonIdentity();
+  localStorage.setItem(USER_ANON_KEY, JSON.stringify(identity));
+  return identity;
+};
+
 export const INITIAL_CONFESSIONS: Confession[] = [
   {
     id: "conf-1",
