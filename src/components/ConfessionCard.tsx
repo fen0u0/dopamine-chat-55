@@ -72,70 +72,70 @@ export const ConfessionCard = ({
 
   return (
     <motion.div
-      className="glass rounded-2xl p-4"
+      className="glass rounded-2xl p-5"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       layout
     >
       {/* Header */}
-      <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xl">
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center text-2xl">
           {confession.avatar}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-medium text-foreground">{confession.anonName}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${CATEGORY_STYLES[confession.category]}`}>
+            <span className="text-sm font-medium text-foreground">{confession.anonName}</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${CATEGORY_STYLES[confession.category]}`}>
               {CATEGORY_EMOJIS[confession.category]} {confession.category}
             </span>
-            <span className="text-xs text-muted-foreground">· {formatTimeAgo(confession.timestamp)}</span>
+            <span className="text-sm text-muted-foreground">· {formatTimeAgo(confession.timestamp)}</span>
           </div>
-          <p className="text-foreground text-sm mt-2 break-words">{confession.text}</p>
+          <p className="text-foreground text-base mt-3 break-words leading-relaxed">{confession.text}</p>
         </div>
       </div>
 
       {/* Flags */}
-      <div className="flex items-center gap-3 mt-4 pt-3 border-t border-border/50">
+      <div className="flex items-center gap-3 mt-5 pt-4 border-t border-border/50">
         <motion.button
           onClick={() => onFlag(confession.id, "red")}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-all ${
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-all ${
             confession.userFlagged === "red"
               ? "bg-red-500/30 text-red-400"
               : "bg-secondary/50 text-muted-foreground hover:bg-red-500/20 hover:text-red-400"
           }`}
           whileTap={{ scale: 0.95 }}
         >
-          <Flag className="w-3 h-3" />
+          <Flag className="w-4 h-4" />
           <span>chaotic</span>
           <span className="font-medium">{confession.flags.red}</span>
         </motion.button>
 
         <motion.button
           onClick={() => onFlag(confession.id, "green")}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs transition-all ${
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-all ${
             confession.userFlagged === "green"
               ? "bg-green-500/30 text-green-400"
               : "bg-secondary/50 text-muted-foreground hover:bg-green-500/20 hover:text-green-400"
           }`}
           whileTap={{ scale: 0.95 }}
         >
-          <Flag className="w-3 h-3" />
+          <Flag className="w-4 h-4" />
           <span>valid</span>
           <span className="font-medium">{confession.flags.green}</span>
         </motion.button>
 
         <div className="flex-1" />
 
-        <span className="text-xs text-muted-foreground">{totalReactions} reactions</span>
+        <span className="text-sm text-muted-foreground">{totalReactions} reactions</span>
       </div>
 
       {/* Reactions */}
-      <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+      <div className="flex items-center gap-2 mt-4 flex-wrap">
         {REACTIONS.map(({ key, emoji }) => (
           <motion.button
             key={key}
             onClick={() => onReact(confession.id, key)}
-            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
               confession.userReacted?.[key]
                 ? "bg-primary/20 text-primary"
                 : "bg-secondary text-muted-foreground hover:bg-secondary/80"
@@ -143,22 +143,22 @@ export const ConfessionCard = ({
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <span>{emoji}</span>
+            <span className="text-base">{emoji}</span>
             <span>{confession.reactions[key]}</span>
           </motion.button>
         ))}
       </div>
 
       {/* Comments section */}
-      <div className="mt-3">
+      <div className="mt-4">
         <motion.button
           onClick={() => setShowComments(!showComments)}
-          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           whileTap={{ scale: 0.95 }}
         >
-          <MessageCircle className="w-3.5 h-3.5" />
+          <MessageCircle className="w-4 h-4" />
           <span>{confession.comments.length} replies</span>
-          {showComments ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          {showComments ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </motion.button>
 
         <AnimatePresence>
@@ -169,24 +169,24 @@ export const ConfessionCard = ({
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="mt-3 space-y-3">
+              <div className="mt-4 space-y-4">
                 {/* Add comment */}
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <input
                     type="text"
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="add a reply..."
-                    className="flex-1 bg-secondary/50 rounded-full px-3 py-1.5 text-xs outline-none focus:ring-1 focus:ring-primary"
+                    className="flex-1 bg-secondary/50 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
                     onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
                   />
                   <motion.button
                     onClick={handleAddComment}
                     disabled={!newComment.trim()}
-                    className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50"
+                    className="w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-50"
                     whileTap={{ scale: 0.9 }}
                   >
-                    <Send className="w-3 h-3" />
+                    <Send className="w-4 h-4" />
                   </motion.button>
                 </div>
 
@@ -194,25 +194,25 @@ export const ConfessionCard = ({
                 {confession.comments.map((comment) => (
                   <motion.div
                     key={comment.id}
-                    className="flex gap-2 pl-2 border-l-2 border-border/50"
+                    className="flex gap-3 pl-3 border-l-2 border-border/50"
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                   >
-                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-sm">
+                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-base">
                       {comment.avatar}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-medium text-foreground">{comment.anonName}</span>
-                        <span className="text-[10px] text-muted-foreground">· {formatTimeAgo(comment.timestamp)}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-foreground">{comment.anonName}</span>
+                        <span className="text-xs text-muted-foreground">· {formatTimeAgo(comment.timestamp)}</span>
                       </div>
-                      <p className="text-xs text-foreground/90 mt-0.5 break-words">{comment.text}</p>
-                      <div className="flex gap-1 mt-1">
+                      <p className="text-sm text-foreground/90 mt-1 break-words">{comment.text}</p>
+                      <div className="flex gap-1.5 mt-2">
                         {COMMENT_REACTIONS.map(({ key, emoji }) => (
                           <motion.button
                             key={key}
                             onClick={() => onReactToComment(confession.id, comment.id, key)}
-                            className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] transition-all ${
+                            className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all ${
                               comment.userReacted?.[key]
                                 ? "bg-primary/20 text-primary"
                                 : "bg-secondary/50 text-muted-foreground hover:bg-secondary"
