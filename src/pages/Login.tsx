@@ -15,6 +15,7 @@ const Login = () => {
   const [alias, setAlias] = useState(randomAlias());
   const [avatar, setAvatar] = useState(AVATARS[0]);
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { status, message } = useAliasCheck(alias, session?.user.id);
 
