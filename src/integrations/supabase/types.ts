@@ -143,26 +143,47 @@ export type Database = {
       }
       profiles: {
         Row: {
+          aura_color: string
           avatar: string
+          bio_currently: string | null
           created_at: string
+          green_flags: string[]
           id: string
+          into_tags: string[]
           mood: string | null
+          onboarding_completed: boolean
+          red_flags: string[]
+          unpopular_opinion: string | null
           updated_at: string
           username: string
         }
         Insert: {
+          aura_color?: string
           avatar?: string
+          bio_currently?: string | null
           created_at?: string
+          green_flags?: string[]
           id: string
+          into_tags?: string[]
           mood?: string | null
+          onboarding_completed?: boolean
+          red_flags?: string[]
+          unpopular_opinion?: string | null
           updated_at?: string
           username: string
         }
         Update: {
+          aura_color?: string
           avatar?: string
+          bio_currently?: string | null
           created_at?: string
+          green_flags?: string[]
           id?: string
+          into_tags?: string[]
           mood?: string | null
+          onboarding_completed?: boolean
+          red_flags?: string[]
+          unpopular_opinion?: string | null
           updated_at?: string
           username?: string
         }
