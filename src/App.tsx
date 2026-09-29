@@ -7,6 +7,7 @@ import { GemsProvider } from "@/contexts/GemsContext";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { StatsProvider } from "@/contexts/StatsContext";
+import { AuthProvider } from "@/lib/auth";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -21,6 +22,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+   <AuthProvider>
     <GemsProvider>
       <SettingsProvider>
         <StatsProvider>
@@ -46,6 +48,7 @@ const App = () => (
         </StatsProvider>
       </SettingsProvider>
     </GemsProvider>
+   </AuthProvider>
   </QueryClientProvider>
 );
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import SignOutButton from "@/components/SignOutButton";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -645,6 +646,7 @@ const Settings = () => {
               </motion.button>
             ))}
           </div>
+          <SignOutButton />
         </motion.div>
 
         {/* Version */}
