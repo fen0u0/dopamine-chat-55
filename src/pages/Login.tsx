@@ -15,7 +15,6 @@ const Login = () => {
   const [alias, setAlias] = useState(randomAlias());
   const [avatar, setAvatar] = useState(AVATARS[0]);
   const [busy, setBusy] = useState(false);
-  const [googleBusy, setGoogleBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { status, message } = useAliasCheck(alias, session?.user.id);
 
@@ -62,16 +61,15 @@ const Login = () => {
     if (ok) navigate("/", { replace: true });
   };
 
-  const handleGoogle = async () => {
-    setError(null);
-    setGoogleBusy(true);
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin },
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin
+      }
     });
-    if (oauthError) {
-      setGoogleBusy(false);
-      setError(oauthError.message || "google sign-in failed");
+    if (error) {
+      console.error("Auth error:", error.message);
     }
   };
 
@@ -171,8 +169,7 @@ const Login = () => {
                   <div className="flex-1 h-px bg-border" /> or <div className="flex-1 h-px bg-border" />
                 </div>
                 <button
-                  onClick={handleGoogle}
-                  disabled={googleBusy}
+                  onClick={handleGoogleLogin}
                   className="w-full py-3 rounded-xl font-semibold bg-secondary border border-border hover:bg-secondary/70 disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {googleBusy && <Loader2 className="w-4 h-4 animate-spin" />}
