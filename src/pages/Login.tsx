@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dices } from "lucide-react";
+import { Dices, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth";
-import { AVATARS, randomAlias, validateAlias } from "@/lib/chat";
+import { AVATARS, randomAlias } from "@/lib/chat";
+import { useAliasCheck } from "@/lib/useAliasCheck";
 import { cn } from "@/lib/utils";
 
 const Login = () => {
@@ -15,21 +16,25 @@ const Login = () => {
   const [alias, setAlias] = useState(randomAlias());
   const [avatar, setAvatar] = useState(AVATARS[0]);
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { status, message } = useAliasCheck(alias, session?.user.id);
 
+  // Short splash; skipped entirely when coming back from Google with a session
   useEffect(() => {
-    const t = setTimeout(() => setShowSplash(false), 2000);
+    const t = setTimeout(() => setShowSplash(false), session ? 0 : 1200);
     return () => clearTimeout(t);
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     if (!loading && session && profile) navigate("/", { replace: true });
   }, [loading, session, profile, navigate]);
 
-  const createProfile = async (userId: string) => {
+  const saveProfile = async (userId: string) => {
+    // upsert on id: re-running setup never collides with your own row
     const { error: e } = await supabase
       .from("profiles")
-      .insert({ id: userId, username: alias, avatar });
+      .upsert({ id: userId, username: alias, avatar }, { onConflict: "id" });
     if (e) {
       setError(e.code === "23505" ? "alias taken, roll again 🎲" : e.message);
       return false;
@@ -39,8 +44,7 @@ const Login = () => {
   };
 
   const handleGuest = async () => {
-    const v = validateAlias(alias);
-    if (v) return setError(v);
+    if (status === "invalid" || status === "taken") return setError(message);
     setBusy(true);
     setError(null);
     let userId = session?.user.id;
@@ -52,19 +56,24 @@ const Login = () => {
       }
       userId = data.user.id;
     }
-    await createProfile(userId);
+    const ok = await saveProfile(userId);
     setBusy(false);
+    if (ok) navigate("/", { replace: true });
   };
 
   const handleGoogle = async () => {
     setError(null);
+    setGoogleBusy(true);
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
+    if (result.redirected) return; // browser is leaving; keep spinner
+    setGoogleBusy(false);
     if (result.error) setError(result.error.message ?? "google sign-in failed");
   };
 
   const needsSetup = !!session && !profile;
+  const shownError = error ?? (status === "taken" || status === "invalid" ? message : null);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 overflow-hidden">
@@ -76,7 +85,7 @@ const Login = () => {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.2, filter: "blur(10px)" }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
           >
             <motion.h1
               className="text-6xl font-bold gradient-text"
@@ -108,7 +117,6 @@ const Login = () => {
               {needsSetup ? "pick your anon identity" : "no names. no faces. just vibes."}
             </p>
 
-            {/* Avatar picker */}
             <div className="flex flex-wrap justify-center gap-2">
               {AVATARS.map((a) => (
                 <button
@@ -124,29 +132,33 @@ const Login = () => {
               ))}
             </div>
 
-            {/* Alias */}
             <div className="relative">
               <input
                 value={alias}
-                onChange={(e) => setAlias(e.target.value.toLowerCase().replace(/\s/g, "_"))}
+                onChange={(e) => { setError(null); setAlias(e.target.value.toLowerCase().replace(/\s/g, "_")); }}
                 maxLength={20}
                 className="w-full px-4 py-3 pr-12 rounded-xl bg-secondary border border-foreground/5 text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
               <button
-                onClick={() => setAlias(randomAlias())}
+                onClick={() => { setError(null); setAlias(randomAlias()); }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
                 aria-label="Random alias"
               >
                 <Dices className="w-5 h-5" />
               </button>
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            <p className="text-xs font-mono h-4 text-muted-foreground">
+              {shownError ? <span className="text-destructive">{shownError}</span>
+                : status === "checking" ? "checking…"
+                : status === "available" ? "✓ available" : ""}
+            </p>
 
             <button
               onClick={handleGuest}
-              disabled={busy}
-              className="w-full py-3 rounded-xl font-semibold bg-primary text-primary-foreground disabled:opacity-50"
+              disabled={busy || status === "checking" || status === "taken" || status === "invalid"}
+              className="w-full py-3 rounded-xl font-semibold bg-primary text-primary-foreground disabled:opacity-50 flex items-center justify-center gap-2"
             >
+              {busy && <Loader2 className="w-4 h-4 animate-spin" />}
               {needsSetup ? "let's go ✨" : busy ? "entering..." : "enter as guest 👻"}
             </button>
 
@@ -157,9 +169,11 @@ const Login = () => {
                 </div>
                 <button
                   onClick={handleGoogle}
-                  className="w-full py-3 rounded-xl font-semibold bg-secondary border border-border hover:bg-secondary/70"
+                  disabled={googleBusy}
+                  className="w-full py-3 rounded-xl font-semibold bg-secondary border border-border hover:bg-secondary/70 disabled:opacity-60 flex items-center justify-center gap-2"
                 >
-                  continue with Google
+                  {googleBusy && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {googleBusy ? "opening google…" : "continue with Google"}
                 </button>
                 <p className="text-[11px] text-muted-foreground">
                   google only saves your chats across devices — others only ever see your alias
