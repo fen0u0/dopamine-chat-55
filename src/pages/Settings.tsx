@@ -645,6 +645,7 @@ const Settings = () => {
               </motion.button>
             ))}
           </div>
+          <SignOutButton />
         </motion.div>
 
         {/* Version */}
