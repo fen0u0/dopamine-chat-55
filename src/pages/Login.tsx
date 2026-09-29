@@ -63,14 +63,18 @@ const Login = () => {
   };
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.origin
-      }
+    setGoogleBusy(true);
+    setError(null);
+
+    const { error: authError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
     });
-    if (error) {
-      console.error("Auth error:", error.message);
+
+    if (authError) {
+      console.error("Auth error:", authError.message);
+      setError(authError.message);
+      setGoogleBusy(false);
     }
   };
 
@@ -171,6 +175,7 @@ const Login = () => {
                 </div>
                 <button
                   onClick={handleGoogleLogin}
+                  disabled={googleBusy}
                   className="w-full py-3 rounded-xl font-semibold bg-secondary border border-border hover:bg-secondary/70 disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {googleBusy && <Loader2 className="w-4 h-4 animate-spin" />}
