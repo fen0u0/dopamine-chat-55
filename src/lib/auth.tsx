@@ -7,13 +7,13 @@ export interface VibeProfile {
   username: string;
   avatar: string;
   mood: string | null;
-  aura_color: string;
-  bio_currently: string | null;
-  unpopular_opinion: string | null;
-  green_flags: string[];
-  red_flags: string[];
-  into_tags: string[];
-  onboarding_completed: boolean;
+  aura_color?: string;
+  bio_currently?: string | null;
+  unpopular_opinion?: string | null;
+  green_flags?: string[];
+  red_flags?: string[];
+  into_tags?: string[];
+  onboarding_completed?: boolean;
 }
 
 export const PROFILE_COLUMNS =
