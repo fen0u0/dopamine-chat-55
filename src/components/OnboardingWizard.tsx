@@ -77,6 +77,11 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
 
   const finish = async () => {
     if (!session) return;
+    if (!alias.trim() || !currently.trim()) {
+      setErr("add an alias and what you're currently into to publish your profile");
+      setStep(!alias.trim() ? 0 : 2);
+      return;
+    }
     setSaving(true);
     setErr(null);
     const { error } = await supabase
@@ -210,7 +215,12 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
 
             {err && <p className="text-sm text-destructive font-jb">{err}</p>}
 
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3">
+              {!editMode && (
+                <button onClick={onClose} className="px-2 py-3 rounded-2xl font-jb text-xs text-muted-foreground hover:text-foreground">
+                  skip for now
+                </button>
+              )}
               {step > 0 && (
                 <button onClick={() => go(-1)} className="px-5 py-3 rounded-2xl border border-foreground/10 font-jb text-sm">back</button>
               )}

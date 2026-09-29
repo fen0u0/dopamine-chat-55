@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dices, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth";
 import { AVATARS, randomAlias } from "@/lib/chat";
 import { useAliasCheck } from "@/lib/useAliasCheck";
@@ -64,12 +63,14 @@ const Login = () => {
   const handleGoogle = async () => {
     setError(null);
     setGoogleBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
     });
-    if (result.redirected) return; // browser is leaving; keep spinner
-    setGoogleBusy(false);
-    if (result.error) setError(result.error.message ?? "google sign-in failed");
+    if (oauthError) {
+      setGoogleBusy(false);
+      setError(oauthError.message || "google sign-in failed");
+    }
   };
 
   const needsSetup = !!session && !profile;
