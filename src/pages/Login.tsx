@@ -26,8 +26,10 @@ const Login = () => {
   }, [session]);
 
   useEffect(() => {
-    if (!loading && session && profile) navigate("/", { replace: true });
-  }, [loading, session, profile, navigate]);
+    // OAuth restores the session before the profile query finishes. Let the
+    // app-level onboarding gate decide whether setup is still needed.
+    if (!loading && session) navigate("/", { replace: true });
+  }, [loading, session, navigate]);
 
   const saveProfile = async (userId: string) => {
     // upsert on id: re-running setup never collides with your own row

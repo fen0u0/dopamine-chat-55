@@ -5,28 +5,25 @@ import { motion } from "framer-motion";
 import BottomNav from "@/components/BottomNav";
 import HomeContent from "@/components/HomeContent";
 import GemsBadge from "@/components/GemsBadge";
-import { profiles } from "@/data/profiles";
+import { useAuth } from "@/lib/auth";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { session, loading } = useAuth();
   const [userMood, setUserMood] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    const user = localStorage.getItem("currentUser");
-    if (!user) {
+    if (loading) return;
+    if (!session) {
       navigate("/login", { replace: true });
       return;
     }
 
     const savedMood = localStorage.getItem("userMood");
-    if (savedMood) {
-      setUserMood(savedMood);
-    }
-  }, [navigate]);
+    if (savedMood) setUserMood(savedMood);
+  }, [loading, navigate, session]);
 
-  const matchCount = userMood 
-    ? profiles.filter(p => p.mood === userMood).length 
-    : profiles.length;
+  const matchCount = 0;
 
   return (
     <div className="min-h-screen bg-background pb-24">
