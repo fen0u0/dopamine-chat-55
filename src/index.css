@@ -1,6 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
 
 @tailwind base;
+
+@layer components {
+  .vibe-wizard-bg { background-color: hsl(263 33% 6% / 0.97); } /* #0d0a14 */
+  .vibe-glass { @apply rounded-3xl border border-foreground/10 bg-foreground/[0.04] backdrop-blur-xl; }
+  .font-jb { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+}
 @tailwind components;
 @tailwind utilities;
 

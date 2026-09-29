@@ -7,7 +7,17 @@ export interface VibeProfile {
   username: string;
   avatar: string;
   mood: string | null;
+  aura_color: string;
+  bio_currently: string | null;
+  unpopular_opinion: string | null;
+  green_flags: string[];
+  red_flags: string[];
+  into_tags: string[];
+  onboarding_completed: boolean;
 }
+
+export const PROFILE_COLUMNS =
+  "id, username, avatar, mood, aura_color, bio_currently, unpopular_opinion, green_flags, red_flags, into_tags, onboarding_completed";
 
 interface AuthContextType {
   session: Session | null;
@@ -19,7 +29,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/** Keeps older, localStorage-based features working with the real account. */
 const syncLegacyStorage = (p: VibeProfile | null) => {
   if (p) {
     localStorage.setItem("currentUser", p.username);
@@ -42,24 +51,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     const { data } = await supabase
       .from("profiles")
-      .select("id, username, avatar, mood")
+      .select(PROFILE_COLUMNS)
       .eq("id", userId)
       .maybeSingle();
-    setProfile(data ?? null);
-    syncLegacyStorage(data ?? null);
+    const p = (data as VibeProfile | null) ?? null;
+    setProfile(p);
+    syncLegacyStorage(p);
   }, []);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+    let lastUserId: string | undefined | null = null;
+    // Single source of truth: INITIAL_SESSION fires immediately, so no separate getSession race.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
-      // defer DB call out of the auth callback
+      const uid = s?.user.id;
+      if (event === "TOKEN_REFRESHED" && uid === lastUserId) return;
+      lastUserId = uid;
       setTimeout(() => {
-        loadProfile(s?.user.id).finally(() => setLoading(false));
+        loadProfile(uid).finally(() => setLoading(false));
       }, 0);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      loadProfile(data.session?.user.id).finally(() => setLoading(false));
     });
     return () => sub.subscription.unsubscribe();
   }, [loadProfile]);
