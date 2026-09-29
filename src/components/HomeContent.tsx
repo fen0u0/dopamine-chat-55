@@ -202,6 +202,7 @@ const HomeContent = ({ userMood }: HomeContentProps) => {
         .eq("onboarding_completed", true)
         .not("bio_currently", "is", null)
         .neq("bio_currently", "")
+        .not("into_tags", "is", null)
         .order("created_at", { ascending: false })
         .limit(50);
 

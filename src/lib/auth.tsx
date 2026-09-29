@@ -60,18 +60,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    let active = true;
     let lastUserId: string | undefined | null = null;
-    // Single source of truth: INITIAL_SESSION fires immediately, so no separate getSession race.
-    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+
+    const syncSession = async (s: Session | null) => {
+      if (!active) return;
       setSession(s);
       const uid = s?.user.id;
-      if (event === "TOKEN_REFRESHED" && uid === lastUserId) return;
+      if (uid === lastUserId && s) return;
       lastUserId = uid;
-      setTimeout(() => {
-        loadProfile(uid).finally(() => setLoading(false));
-      }, 0);
+      await loadProfile(uid);
+      if (active) setLoading(false);
+    };
+
+    // Read the restored OAuth session explicitly, then keep it in sync with refresh/sign-out events.
+    void supabase.auth.getSession().then(({ data }) => syncSession(data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+      void syncSession(s);
     });
-    return () => sub.subscription.unsubscribe();
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, [loadProfile]);
 
   const refreshProfile = useCallback(
