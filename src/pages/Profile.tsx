@@ -33,70 +33,67 @@ import { useGems } from "@/contexts/GemsContext";
 import { useStats } from "@/contexts/StatsContext";
 import { toast } from "sonner";
 import { generateRandomAlias, moodOptions } from "@/data/profiles";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { gems } = useGems();
   const { getAura, getEnergy, messagesSent, profilesOpened } = useStats();
+  const { profile, refreshProfile } = useAuth();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
   const [profileVersion, setProfileVersion] = useState(0);
   
-  const savedProfile = JSON.parse(localStorage.getItem("profile_data") || "{}");
-  
-  const alias = savedProfile.alias || "sleepy_potato42";
-  const [currentMood, setCurrentMood] = useState("✨ manifesting");
+  const savedProfile = profile ?? {};
+  const alias = profile?.username || "sleepy_potato42";
+  const [currentMood, setCurrentMood] = useState(profile?.mood || "✨ manifesting");
 
   const user = {
-    bio:
-      savedProfile.bio ||
-      "chronically online | 3am thoughts enthusiast | probably overthinking rn",
-    timezone: savedProfile.timezone || "GMT+5",
-    vibe: savedProfile.vibe || "chaotic good",
-    activeHours: savedProfile.activeHours || "night owl",
-    replySpeed: savedProfile.replySpeed || "chaotic",
+    bio: profile?.bio_currently || "share what is currently on your mind",
+    timezone: "GMT+5",
+    vibe: "chaotic good",
+    activeHours: "night owl",
+    replySpeed: "chaotic",
     quirkyPrompt: {
-      prompt: savedProfile.quirkyPrompt || "my roman empire:",
-      answer:
-        savedProfile.quirkyAnswer || "that one embarrassing thing from 2016",
+      prompt: "my roman empire:",
+      answer: profile?.unpopular_opinion || "still loading a hot take",
     },
-    interests:
-      savedProfile.interests || [
-        "memes",
-        "late night talks",
-        "chaos",
-        "overthinking",
-        "music",
-      ],
+    interests: profile?.into_tags || [],
   };
 
   // Gen Z quirky features - now editable
   const currentlyStatus = {
-    watching: savedProfile.currentlyWatching || "that show everyone's talking about",
-    listening: savedProfile.currentlyListening || "the same 3 songs on repeat",
-    obsessing: savedProfile.currentlyObsessing || "random wikipedia rabbit holes"
+    watching: profile?.bio_currently || "nothing here yet",
+    listening: profile?.bio_currently || "nothing here yet",
+    obsessing: profile?.unpopular_opinion || "nothing here yet",
   };
 
   const auraPoints = getAura();
   const energyLevel = getEnergy();
   
   const vibeFlags = {
-    green: savedProfile.greenFlags || ["good listener", "sends memes", "no small talk"],
-    red: savedProfile.redFlags || ["double texts", "3am overthinking", "spotify wrapped anxiety"]
+    green: profile?.green_flags || [],
+    red: profile?.red_flags || [],
   };
   
   const lookingFor = [
-    { icon: <Users className="w-4 h-4" />, label: "here for", value: savedProfile.hereFor || "random convos" },
-    { icon: <Ghost className="w-4 h-4" />, label: "anonymity", value: savedProfile.anonymity || "100% anon" },
-    { icon: <Sparkles className="w-4 h-4" />, label: "energy", value: savedProfile.energyPref || "unhinged welcomed" },
+    { icon: <Users className="w-4 h-4" />, label: "here for", value: "random convos" },
+    { icon: <Ghost className="w-4 h-4" />, label: "anonymity", value: "100% anon" },
+    { icon: <Sparkles className="w-4 h-4" />, label: "energy", value: "unhinged welcomed" },
   ];
 
-  const handleRegenerateAlias = () => {
+  const handleRegenerateAlias = async () => {
+    if (!profile) return;
     const newAlias = generateRandomAlias();
-    const profileData = JSON.parse(localStorage.getItem("profile_data") || "{}");
-    localStorage.setItem("profile_data", JSON.stringify({ ...profileData, alias: newAlias }));
-    setProfileVersion(v => v + 1);
-    toast.success(`you're now ${newAlias} 👻`);
+    const { error } = await supabase.from("profiles").update({ username: newAlias }).eq("id", profile.id);
+    if (error) {
+      toast.error("could not update your alias");
+      return;
+    }
+    await refreshProfile();
+    setProfileVersion((v) => v + 1);
+    toast.success(`you're now ${newAlias}`);
   };
 
   const handleProfileSave = () => {
