@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { ConfessionInput } from "@/components/ConfessionInput";
@@ -9,59 +9,170 @@ import {
   Confession,
   Comment,
   ConfessionCategory,
-  INITIAL_CONFESSIONS,
   getUserAnonIdentity,
 } from "@/lib/confessionData";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
-const STORAGE_KEY = "vibe_confessions";
+interface ConfessionRow {
+  id: string;
+  content: string;
+  category: ConfessionCategory;
+  user_id: string;
+  created_at: string;
+}
 
-const loadConfessions = (): Confession[] => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (e) {
-    console.error("Failed to load confessions:", e);
-  }
-  return INITIAL_CONFESSIONS;
+interface ProfileRow {
+  id: string;
+  username: string;
+  avatar: string;
+}
+
+const blankMeta = () => ({
+  flags: { red: 0, green: 0 },
+  reactions: { crying: 0, skull: 0, eyes: 0, fire: 0, sparkles: 0 },
+  comments: [] as Comment[],
+  userReacted: { crying: false, skull: false, eyes: false, fire: false, sparkles: false },
+  userFlagged: null as "red" | "green" | null,
+});
+
+const rowToConfession = (
+  row: ConfessionRow,
+  profileMap: Record<string, ProfileRow | undefined>
+): Confession => {
+  const p = profileMap[row.user_id];
+  const anon = getUserAnonIdentity();
+  return {
+    id: row.id,
+    anonName: p?.username ?? anon.name,
+    avatar: p?.avatar ?? anon.avatar,
+    text: row.content,
+    timestamp: row.created_at,
+    category: row.category,
+    ...blankMeta(),
+  };
 };
 
 const Confessions = () => {
-  const [confessions, setConfessions] = useState<Confession[]>(loadConfessions);
-
-  // Persist confessions to localStorage whenever they change
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(confessions));
-    } catch (e) {
-      console.error("Failed to save confessions:", e);
-    }
-  }, [confessions]);
+  const navigate = useNavigate();
+  const { profile, loading } = useAuth();
+  const [confessions, setConfessions] = useState<Confession[]>([]);
+  const [profileMap, setProfileMap] = useState<Record<string, ProfileRow | undefined>>({});
   const [selectedCategory, setSelectedCategory] = useState<ConfessionCategory | "all">("all");
-  const [sortBy, setSortBy] = useState<SortOption>("hot");
+  const [sortBy, setSortBy] = useState<SortOption>("new");
+  const [fetching, setFetching] = useState(true);
 
-  // Get current user identity for filtering "mine"
+  // Ref mirror so the realtime callback always sees the latest profile lookups
+  const profileMapRef = useRef(profileMap);
+  useEffect(() => {
+    profileMapRef.current = profileMap;
+  }, [profileMap]);
+
+  useEffect(() => {
+    if (!loading && !profile) navigate("/login", { replace: true });
+  }, [loading, profile, navigate]);
+
+  const fetchProfile = useCallback(async (userId: string): Promise<ProfileRow | undefined> => {
+    const cached = profileMapRef.current[userId];
+    if (cached) return cached;
+    const { data } = await supabase
+      .from("profiles")
+      .select("id, username, avatar")
+      .eq("id", userId)
+      .maybeSingle();
+    const p = (data as ProfileRow | null) ?? undefined;
+    if (p) {
+      profileMapRef.current = { ...profileMapRef.current, [userId]: p };
+      setProfileMap(profileMapRef.current);
+    }
+    return p;
+  }, []);
+
+  const loadConfessions = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("confessions")
+      .select("id, content, category, user_id, created_at")
+      .order("created_at", { ascending: false })
+      .limit(200);
+
+    if (error) {
+      toast.error("couldn't load confessions 😩");
+      setFetching(false);
+      return;
+    }
+
+    const rows = (data ?? []) as ConfessionRow[];
+    const userIds = [...new Set(rows.map((r) => r.user_id))];
+    let pMap: Record<string, ProfileRow | undefined> = {};
+    if (userIds.length) {
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, username, avatar")
+        .in("id", userIds);
+      pMap = (profiles ?? []).reduce<Record<string, ProfileRow>>((acc, p) => {
+        acc[p.id] = p as ProfileRow;
+        return acc;
+      }, {});
+      profileMapRef.current = pMap;
+      setProfileMap(pMap);
+    }
+
+    setConfessions(rows.map((r) => rowToConfession(r, pMap)));
+    setFetching(false);
+  }, []);
+
+  useEffect(() => {
+    if (!profile) return;
+    loadConfessions();
+
+    const channel = supabase
+      .channel("confessions-feed")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "confessions" },
+        async (payload) => {
+          const row = payload.new as ConfessionRow;
+          const p = await fetchProfile(row.user_id);
+          setConfessions((prev) => {
+            if (prev.some((c) => c.id === row.id)) return prev;
+            const map: Record<string, ProfileRow | undefined> = p ? { [row.user_id]: p } : {};
+            return [rowToConfession(row, map), ...prev];
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "confessions" },
+        (payload) => {
+          const oldId = (payload.old as ConfessionRow).id;
+          setConfessions((prev) => prev.filter((c) => c.id !== oldId));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile, loadConfessions, fetchProfile]);
+
   const currentUser = useMemo(() => getUserAnonIdentity(), []);
 
-  // Filter and sort confessions
   const displayedConfessions = useMemo(() => {
     let filtered = selectedCategory === "all"
       ? confessions
       : confessions.filter((c) => c.category === selectedCategory);
 
-    // Filter for "mine" sort option
     if (sortBy === "mine") {
       filtered = filtered.filter(
         (c) => c.anonName === currentUser.name && c.avatar === currentUser.avatar
       );
-      // Sort by newest for own posts
-      return [...filtered].sort((a, b) => 
+      return [...filtered].sort((a, b) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
     }
 
-    // Sort based on selected option
     switch (sortBy) {
       case "hot":
         return [...filtered].sort((a, b) => {
@@ -70,7 +181,7 @@ const Confessions = () => {
           return bTotal - aTotal;
         });
       case "new":
-        return [...filtered].sort((a, b) => 
+        return [...filtered].sort((a, b) =>
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
       default:
@@ -78,21 +189,27 @@ const Confessions = () => {
     }
   }, [confessions, selectedCategory, sortBy, currentUser]);
 
-  const handleAddConfession = (text: string, category: ConfessionCategory) => {
-    const { name, avatar } = getUserAnonIdentity();
-    const newConfession: Confession = {
-      id: `conf-${Date.now()}`,
-      anonName: name,
-      avatar,
-      text,
-      timestamp: new Date().toISOString(),
-      category,
-      flags: { red: 0, green: 0 },
-      reactions: { crying: 0, skull: 0, eyes: 0, fire: 0, sparkles: 0 },
-      comments: [],
-      userReacted: { crying: false, skull: false, eyes: false, fire: false, sparkles: false },
+  const handleAddConfession = async (text: string, category: ConfessionCategory) => {
+    if (!profile) return;
+    const { data, error } = await supabase
+      .from("confessions")
+      .insert({ content: text, category, user_id: profile.id })
+      .select("id, content, category, user_id, created_at")
+      .single();
+
+    if (error) {
+      toast.error("couldn't post confession 😩");
+      return;
+    }
+
+    const row = data as ConfessionRow;
+    const ownProfile: Record<string, ProfileRow | undefined> = {
+      [profile.id]: { id: profile.id, username: profile.username, avatar: profile.avatar },
     };
-    setConfessions([newConfession, ...confessions]);
+    setConfessions((prev) => {
+      if (prev.some((c) => c.id === row.id)) return prev;
+      return [rowToConfession(row, ownProfile), ...prev];
+    });
   };
 
   const handleReactToConfession = (
@@ -102,7 +219,6 @@ const Confessions = () => {
     setConfessions((prev) =>
       prev.map((conf) => {
         if (conf.id !== confessionId) return conf;
-        
         const wasReacted = conf.userReacted?.[reaction] || false;
         return {
           ...conf,
@@ -125,21 +241,14 @@ const Confessions = () => {
     setConfessions((prev) =>
       prev.map((conf) => {
         if (conf.id !== confessionId) return conf;
-        
         const previousVote = conf.userFlagged;
-        let newFlags = { ...conf.flags };
-
-        // Remove previous vote if exists
+        const newFlags = { ...conf.flags };
         if (previousVote) {
           newFlags[previousVote] = Math.max(0, newFlags[previousVote] - 1);
         }
-
-        // If clicking same flag, just remove (toggle off)
         if (previousVote === flag) {
           return { ...conf, flags: newFlags, userFlagged: null };
         }
-
-        // Add new vote
         newFlags[flag] = newFlags[flag] + 1;
         return { ...conf, flags: newFlags, userFlagged: flag };
       })
@@ -164,12 +273,10 @@ const Confessions = () => {
     setConfessions((prev) =>
       prev.map((conf) => {
         if (conf.id !== confessionId) return conf;
-        
         return {
           ...conf,
           comments: conf.comments.map((comment) => {
             if (comment.id !== commentId) return comment;
-            
             const wasReacted = comment.userReacted?.[reaction] || false;
             return {
               ...comment,
@@ -205,19 +312,23 @@ const Confessions = () => {
   return (
     <div className="min-h-screen bg-background pb-24">
       <Header title="confessions" showLogo={false} />
-      
+
       <main className="max-w-2xl mx-auto px-4 py-6 pt-24 space-y-5">
         <ConfessionInput onSubmit={handleAddConfession} />
-        
+
         <CategoryFilter
           selected={selectedCategory}
           onSelect={setSelectedCategory}
         />
 
         <SortBar selected={sortBy} onSelect={setSortBy} />
-        
+
         <div className="space-y-5">
-          {displayedConfessions.length === 0 ? (
+          {fetching ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <p className="text-xl">loading the tea... 🫖</p>
+            </div>
+          ) : displayedConfessions.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <p className="text-xl">no tea in this category yet 🫖</p>
               <p className="text-base mt-2">be the first to spill!</p>
@@ -237,7 +348,7 @@ const Confessions = () => {
           )}
         </div>
       </main>
-      
+
       <BottomNav />
     </div>
   );
