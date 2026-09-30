@@ -457,6 +457,14 @@ const Profile = () => {
         onClose={() => setShowEditModal(false)}
         onSave={handleProfileSave}
       />
+      <OnboardingWizard
+        open={showWizard}
+        editMode
+        onClose={() => {
+          setShowWizard(false);
+          handleProfileSave();
+        }}
+      />
       <SafetyCenterModal
         isOpen={showSafetyModal}
         onClose={() => setShowSafetyModal(false)}
