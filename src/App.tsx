@@ -8,6 +8,7 @@ import { ChatProvider } from "@/contexts/ChatContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { StatsProvider } from "@/contexts/StatsContext";
 import { AuthProvider } from "@/lib/auth";
+import { OnboardingGate } from "@/components/OnboardingWizard";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
