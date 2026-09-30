@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dices, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth";
 import { AVATARS, randomAlias } from "@/lib/chat";
 import { useAliasCheck } from "@/lib/useAliasCheck";
@@ -27,8 +26,10 @@ const Login = () => {
   }, [session]);
 
   useEffect(() => {
-    if (!loading && session && profile) navigate("/", { replace: true });
-  }, [loading, session, profile, navigate]);
+    // OAuth restores the session before the profile query finishes. Let the
+    // app-level onboarding gate decide whether setup is still needed.
+    if (!loading && session) navigate("/", { replace: true });
+  }, [loading, session, navigate]);
 
   const saveProfile = async (userId: string) => {
     // upsert on id: re-running setup never collides with your own row
@@ -61,15 +62,20 @@ const Login = () => {
     if (ok) navigate("/", { replace: true });
   };
 
-  const handleGoogle = async () => {
-    setError(null);
+  const handleGoogleLogin = async () => {
     setGoogleBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    setError(null);
+
+    const { error: authError } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
     });
-    if (result.redirected) return; // browser is leaving; keep spinner
-    setGoogleBusy(false);
-    if (result.error) setError(result.error.message ?? "google sign-in failed");
+
+    if (authError) {
+      console.error("Auth error:", authError.message);
+      setError(authError.message);
+      setGoogleBusy(false);
+    }
   };
 
   const needsSetup = !!session && !profile;
@@ -168,7 +174,7 @@ const Login = () => {
                   <div className="flex-1 h-px bg-border" /> or <div className="flex-1 h-px bg-border" />
                 </div>
                 <button
-                  onClick={handleGoogle}
+                  onClick={handleGoogleLogin}
                   disabled={googleBusy}
                   className="w-full py-3 rounded-xl font-semibold bg-secondary border border-border hover:bg-secondary/70 disabled:opacity-60 flex items-center justify-center gap-2"
                 >

@@ -24,6 +24,7 @@ const spring = { type: "spring" as const, stiffness: 380, damping: 32 };
 interface Props {
   open: boolean;
   onClose?: () => void;
+  onSkip?: () => void;
   editMode?: boolean;
 }
 
@@ -40,7 +41,7 @@ const Chip = ({ on, children, onClick }: { on: boolean; children: React.ReactNod
   </motion.button>
 );
 
-const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
+const OnboardingWizard = ({ open, onClose, onSkip, editMode }: Props) => {
   const { session, profile, refreshProfile } = useAuth();
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
@@ -57,15 +58,15 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
   const { status, message } = useAliasCheck(alias, session?.user.id);
 
   useEffect(() => {
-    if (!open || !profile) return;
+    if (!open) return;
     setStep(0);
-    setAlias(profile.username);
-    setAura(profile.aura_color || "violet");
-    setInto(profile.into_tags ?? []);
-    setCurrently(profile.bio_currently ?? "");
-    setOpinion(profile.unpopular_opinion ?? "");
-    setGreen(profile.green_flags ?? []);
-    setRed(profile.red_flags ?? []);
+    setAlias(profile?.username ?? randomAlias());
+    setAura(profile?.aura_color || "violet");
+    setInto(profile?.into_tags ?? []);
+    setCurrently(profile?.bio_currently ?? "");
+    setOpinion(profile?.unpopular_opinion ?? "");
+    setGreen(profile?.green_flags ?? []);
+    setRed(profile?.red_flags ?? []);
     setErr(null);
   }, [open, profile]);
 
@@ -75,13 +76,44 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
   const go = (d: number) => { setDir(d); setStep((s) => s + d); };
   const aliasOk = status === "available" || status === "idle";
 
+  const skip = async () => {
+    if (!session) {
+      onSkip?.();
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.from("profiles").upsert({
+      id: session.user.id,
+      username: alias.trim() || randomAlias(),
+      aura_color: aura,
+      into_tags: into,
+      bio_currently: currently.trim() || null,
+      unpopular_opinion: opinion.trim() || null,
+      green_flags: green,
+      red_flags: red,
+      onboarding_completed: false,
+    }, { onConflict: "id" });
+    setSaving(false);
+    if (error) {
+      setErr(error.code === "23505" ? "alias taken, roll again" : error.message);
+      return;
+    }
+    await refreshProfile();
+    onSkip?.();
+  };
+
   const finish = async () => {
     if (!session) return;
+    if (!alias.trim() || !currently.trim()) {
+      setErr("add an alias and what you're currently into to publish your profile");
+      setStep(!alias.trim() ? 0 : 2);
+      return;
+    }
     setSaving(true);
     setErr(null);
     const { error } = await supabase
       .from("profiles")
-      .update({
+      .upsert({
         username: alias,
         aura_color: aura,
         into_tags: into,
@@ -90,8 +122,7 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
         green_flags: green,
         red_flags: red,
         onboarding_completed: true,
-      })
-      .eq("id", session.user.id);
+      }, { onConflict: "id" });
     setSaving(false);
     if (error) {
       setErr(error.code === "23505" ? "alias taken, roll again 🎲" : error.message);
@@ -163,7 +194,7 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
       </label>
     </div>,
     <div key="3" className="space-y-5">
-      <h2 className="text-2xl font-bold">vibe check ✅🚩</h2>
+      <h2 className="text-2xl font-bold">vibe check ✅��</h2>
       <div className="space-y-2">
         <p className="font-jb text-[11px] text-muted-foreground">// green flags</p>
         <div className="flex flex-wrap gap-2">
@@ -210,7 +241,12 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
 
             {err && <p className="text-sm text-destructive font-jb">{err}</p>}
 
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3">
+              {!editMode && (
+                <button onClick={() => void skip()} disabled={saving} className="px-2 py-3 rounded-2xl font-jb text-xs text-muted-foreground hover:text-foreground disabled:opacity-50">
+                  skip for now
+                </button>
+              )}
               {step > 0 && (
                 <button onClick={() => go(-1)} className="px-5 py-3 rounded-2xl border border-foreground/10 font-jb text-sm">back</button>
               )}
@@ -236,8 +272,9 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
 
 export const OnboardingGate = () => {
   const { session, profile, loading } = useAuth();
-  const show = !loading && !!session && !!profile && !profile.onboarding_completed;
-  return <OnboardingWizard open={show} />;
+  const [skipped, setSkipped] = useState(false);
+  const show = !loading && !!session && !skipped && (!profile || !profile.onboarding_completed);
+  return <OnboardingWizard open={show} onSkip={() => setSkipped(true)} />;
 };
 
 export default OnboardingWizard;

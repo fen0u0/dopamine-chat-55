@@ -12,6 +12,7 @@ export interface Comment {
 
 export interface Confession {
   id: string;
+  userId?: string;
   anonName: string;
   avatar: string;
   text: string;

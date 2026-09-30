@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { profiles } from "@/data/profiles";
 import { Profile } from "@/types/profile";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import ProfileCardExpanded from "./ProfileCardExpanded";
 import { 
@@ -190,12 +191,43 @@ const HomeContent = ({ userMood }: HomeContentProps) => {
   const navigate = useNavigate();
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [hoveredProfile, setHoveredProfile] = useState<string | null>(null);
+  const [liveProfiles, setLiveProfiles] = useState<Profile[]>([]);
 
-  const filteredProfiles = userMood 
-    ? profiles.filter(p => p.mood === userMood)
-    : profiles;
+  useEffect(() => {
+    let active = true;
+    const loadProfiles = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, username, avatar, mood, bio_currently, into_tags, onboarding_completed")
+        .eq("onboarding_completed", true)
+        .not("bio_currently", "is", null)
+        .neq("bio_currently", "")
+        .not("into_tags", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(50);
 
-  const displayProfiles = filteredProfiles.length > 0 ? filteredProfiles : profiles;
+      if (!active) return;
+      setLiveProfiles((data ?? []).map((p) => ({
+        id: p.id,
+        name: p.username,
+        age: 0,
+        bio: p.bio_currently ?? "",
+        images: p.avatar ? [p.avatar] : [],
+        interests: p.into_tags ?? [],
+        mood: p.mood ?? undefined,
+        vibe: "currently vibing",
+        isOnline: true,
+      })));
+    };
+    void loadProfiles();
+    return () => { active = false; };
+  }, []);
+
+  const sourceProfiles = liveProfiles;
+  const filteredProfiles = userMood
+    ? sourceProfiles.filter((p) => p.mood === userMood)
+    : sourceProfiles;
+  const displayProfiles = filteredProfiles;
 
   const handleAvatarClick = (profile: Profile) => {
     setSelectedProfile(profile);
