@@ -26,3 +26,4 @@ dist-ssr
 # env overrides (never commit private keys)
 .env.local
 .env.*.local
+.env
