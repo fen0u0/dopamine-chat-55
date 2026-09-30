@@ -124,20 +124,34 @@ const Confessions = () => {
   }, [confessions, selectedCategory, sortBy, currentUser]);
 
   const handleAddConfession = async (text: string, category: ConfessionCategory) => {
-    if (!session?.user.id) {
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    const user = authData.user ?? session?.user;
+
+    if (authError || !user) {
       throw new Error("You must be signed in to post a confession.");
     }
 
-    const { error } = await supabase.from("confessions").insert({
-      content: text,
-      category,
-      user_id: session.user.id,
-    });
+    const { data, error } = await supabase
+      .from("confessions")
+      .insert({
+        content: text,
+        category,
+        user_id: user.id,
+      })
+      .select("id, content, category, user_id, created_at")
+      .single();
 
-    if (error) {
-      console.error("Failed to save confession:", error.message);
-      throw error;
+    if (error || !data) {
+      console.error("Failed to save confession:", error?.message ?? "No confession returned");
+      throw error ?? new Error("The confession could not be saved.");
     }
+
+    const confession = toConfession(data as ConfessionRow);
+    setConfessions((current) =>
+      current.some((item) => item.id === confession.id)
+        ? current
+        : [confession, ...current]
+    );
   };
 
   const handleReactToConfession = (
