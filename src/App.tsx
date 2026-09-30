@@ -31,6 +31,7 @@ const App = () => (
             <TooltipProvider>
               <Toaster />
               <Sonner />
+              <OnboardingGate />
 
               <Routes>
                      <Route path="/" element={<Home />} />
