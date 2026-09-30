@@ -28,6 +28,7 @@ import {
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import EditProfileModal from "@/components/EditProfileModal";
+import OnboardingWizard from "@/components/OnboardingWizard";
 import SafetyCenterModal from "@/components/SafetyCenterModal";
 import { useGems } from "@/contexts/GemsContext";
 import { useStats } from "@/contexts/StatsContext";
@@ -43,6 +44,7 @@ const Profile = () => {
   const { profile, refreshProfile } = useAuth();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const [profileVersion, setProfileVersion] = useState(0);
   
   const savedProfile = profile ?? {};
@@ -373,7 +375,7 @@ const Profile = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-foreground">details</h2>
             <motion.button
-              onClick={() => setShowEditModal(true)}
+              onClick={() => setShowWizard(true)}
               className="text-xs text-primary flex items-center gap-1"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -454,6 +456,14 @@ const Profile = () => {
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
         onSave={handleProfileSave}
+      />
+      <OnboardingWizard
+        open={showWizard}
+        editMode
+        onClose={() => {
+          setShowWizard(false);
+          handleProfileSave();
+        }}
       />
       <SafetyCenterModal
         isOpen={showSafetyModal}
