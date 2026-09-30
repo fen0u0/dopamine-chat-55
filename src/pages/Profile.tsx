@@ -375,7 +375,7 @@ const Profile = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold text-foreground">details</h2>
             <motion.button
-              onClick={() => setShowEditModal(true)}
+              onClick={() => setShowWizard(true)}
               className="text-xs text-primary flex items-center gap-1"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
