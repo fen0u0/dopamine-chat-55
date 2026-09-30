@@ -28,6 +28,7 @@ import {
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import EditProfileModal from "@/components/EditProfileModal";
+import OnboardingWizard from "@/components/OnboardingWizard";
 import SafetyCenterModal from "@/components/SafetyCenterModal";
 import { useGems } from "@/contexts/GemsContext";
 import { useStats } from "@/contexts/StatsContext";
