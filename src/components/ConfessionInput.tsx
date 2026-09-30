@@ -16,20 +16,30 @@ const CATEGORIES: { value: ConfessionCategory; label: string; emoji: string }[] 
 const TEXT_EMOJIS = ["✨", "💀", "😭", "🔥", "💅", "🫶", "😩", "💜", "🤭", "👀", "😈", "🥺", "🫣", "💯", "🙃", "😮‍💨"];
 
 interface ConfessionInputProps {
-  onSubmit: (text: string, category: ConfessionCategory) => void;
+  onSubmit: (text: string, category: ConfessionCategory) => Promise<void>;
 }
 
 export const ConfessionInput = ({ onSubmit }: ConfessionInputProps) => {
   const [text, setText] = useState("");
   const [category, setCategory] = useState<ConfessionCategory>("random");
   const [showEmojis, setShowEmojis] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
-    if (!text.trim()) return;
-    onSubmit(text.trim(), category);
-    setText("");
-    setShowEmojis(false);
-    toast.success("confession posted anonymously 👻");
+  const handleSubmit = async () => {
+    const trimmedText = text.trim();
+    if (!trimmedText || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit(trimmedText, category);
+      setText("");
+      setShowEmojis(false);
+      toast.success("confession posted anonymously");
+    } catch {
+      toast.error("could not post confession. please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const addEmoji = (emoji: string) => {

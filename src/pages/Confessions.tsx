@@ -1,45 +1,90 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import { ConfessionInput } from "@/components/ConfessionInput";
 import { ConfessionCard } from "@/components/ConfessionCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { SortBar, SortOption } from "@/components/SortBar";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import {
   Confession,
   Comment,
   ConfessionCategory,
-  INITIAL_CONFESSIONS,
   getUserAnonIdentity,
 } from "@/lib/confessionData";
 
-const STORAGE_KEY = "vibe_confessions";
+type ConfessionRow = {
+  id: string;
+  content: string;
+  category: ConfessionCategory;
+  user_id: string;
+  created_at: string;
+};
 
-const loadConfessions = (): Confession[] => {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      return JSON.parse(stored);
-    }
-  } catch (e) {
-    console.error("Failed to load confessions:", e);
-  }
-  return INITIAL_CONFESSIONS;
+const toConfession = (row: ConfessionRow): Confession => {
+  const identity = getUserAnonIdentity();
+  return {
+    id: row.id,
+    userId: row.user_id,
+    anonName: identity.name,
+    avatar: identity.avatar,
+    text: row.content,
+    timestamp: row.created_at,
+    category: row.category,
+    flags: { red: 0, green: 0 },
+    reactions: { crying: 0, skull: 0, eyes: 0, fire: 0, sparkles: 0 },
+    comments: [],
+    userReacted: { crying: false, skull: false, eyes: false, fire: false, sparkles: false },
+  };
 };
 
 const Confessions = () => {
-  const [confessions, setConfessions] = useState<Confession[]>(loadConfessions);
-
-  // Persist confessions to localStorage whenever they change
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(confessions));
-    } catch (e) {
-      console.error("Failed to save confessions:", e);
-    }
-  }, [confessions]);
+  const { session } = useAuth();
+  const [confessions, setConfessions] = useState<Confession[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<ConfessionCategory | "all">("all");
   const [sortBy, setSortBy] = useState<SortOption>("hot");
+  const [isLoading, setIsLoading] = useState(true);
+
+  const loadConfessions = useCallback(async () => {
+    const { data, error } = await supabase
+      .from("confessions")
+      .select("id, content, category, user_id, created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Failed to load confessions:", error.message);
+      setIsLoading(false);
+      return;
+    }
+
+    setConfessions((data as ConfessionRow[]).map(toConfession));
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void loadConfessions();
+
+    const channel = supabase
+      .channel("confessions-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "confessions" },
+        (payload) => {
+          const confession = toConfession(payload.new as ConfessionRow);
+          setConfessions((current) =>
+            current.some((item) => item.id === confession.id)
+              ? current
+              : [confession, ...current]
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [loadConfessions]);
 
   // Get current user identity for filtering "mine"
   const currentUser = useMemo(() => getUserAnonIdentity(), []);
@@ -78,21 +123,21 @@ const Confessions = () => {
     }
   }, [confessions, selectedCategory, sortBy, currentUser]);
 
-  const handleAddConfession = (text: string, category: ConfessionCategory) => {
-    const { name, avatar } = getUserAnonIdentity();
-    const newConfession: Confession = {
-      id: `conf-${Date.now()}`,
-      anonName: name,
-      avatar,
-      text,
-      timestamp: new Date().toISOString(),
+  const handleAddConfession = async (text: string, category: ConfessionCategory) => {
+    if (!session?.user.id) {
+      throw new Error("You must be signed in to post a confession.");
+    }
+
+    const { error } = await supabase.from("confessions").insert({
+      content: text,
       category,
-      flags: { red: 0, green: 0 },
-      reactions: { crying: 0, skull: 0, eyes: 0, fire: 0, sparkles: 0 },
-      comments: [],
-      userReacted: { crying: false, skull: false, eyes: false, fire: false, sparkles: false },
-    };
-    setConfessions([newConfession, ...confessions]);
+      user_id: session.user.id,
+    });
+
+    if (error) {
+      console.error("Failed to save confession:", error.message);
+      throw error;
+    }
   };
 
   const handleReactToConfession = (
