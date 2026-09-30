@@ -44,6 +44,7 @@ const Profile = () => {
   const { profile, refreshProfile } = useAuth();
   const [showEditModal, setShowEditModal] = useState(false);
   const [showSafetyModal, setShowSafetyModal] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
   const [profileVersion, setProfileVersion] = useState(0);
   
   const savedProfile = profile ?? {};
