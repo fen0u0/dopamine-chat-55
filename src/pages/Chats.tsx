@@ -19,7 +19,6 @@ const Chats = () => {
   const navigate = useNavigate();
   const { profile, loading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [people, setPeople] = useState<VibeProfile[]>([]);
   const [convos, setConvos] = useState<ConvoRow[]>([]);
   const [online, setOnline] = useState<Set<string>>(new Set());
 
@@ -30,20 +29,15 @@ const Chats = () => {
   useEffect(() => {
     if (!profile) return;
     const load = async () => {
-      const [{ data: ppl }, { data: cs }] = await Promise.all([
-        supabase.from("profiles").select("id, username, avatar, mood").neq("id", profile.id).order("created_at", { ascending: false }).limit(50),
-        supabase.from("conversations").select("id, user_a, user_b, last_message_at").order("last_message_at", { ascending: false }),
-      ]);
-      const all = ppl ?? [];
-      setPeople(all);
+      const { data: cs } = await supabase
+        .from("conversations")
+        .select("id, user_a, user_b, last_message_at")
+        .order("last_message_at", { ascending: false });
       const otherIds = (cs ?? []).map((c) => (c.user_a === profile.id ? c.user_b : c.user_a));
-      const missing = otherIds.filter((id) => !all.find((p) => p.id === id));
-      let extra: VibeProfile[] = [];
-      if (missing.length) {
-        const { data } = await supabase.from("profiles").select("id, username, avatar, mood").in("id", missing);
-        extra = data ?? [];
-      }
-      const lookup = [...all, ...extra];
+      const { data: all } = otherIds.length
+        ? await supabase.from("profiles").select("id, username, avatar, mood").in("id", otherIds)
+        : { data: [] as VibeProfile[] };
+      const lookup = all ?? [];
       setConvos(
         (cs ?? [])
           .map((c) => {
@@ -73,20 +67,10 @@ const Chats = () => {
     };
   }, [profile]);
 
-  const filteredPeople = useMemo(
-    () => people.filter((p) => p.username.includes(searchQuery.toLowerCase())),
-    [people, searchQuery]
+  const filteredConvos = useMemo(
+    () => convos.filter((conversation) => conversation.other.username.toLowerCase().includes(searchQuery.toLowerCase())),
+    [convos, searchQuery]
   );
-
-  const openDm = async (other: VibeProfile) => {
-    if (!profile) return;
-    try {
-      const id = await getOrCreateConversation(profile.id, other.id);
-      navigate(`/chat/${id}`);
-    } catch {
-      toast.error("couldn't open chat, try again");
-    }
-  };
 
   const Avatar = ({ p }: { p: VibeProfile }) => (
     <div className="relative">
@@ -118,11 +102,11 @@ const Chats = () => {
         {!searchQuery && (
           <section className="mb-8">
             <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">convos 💬</h2>
-            {convos.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4">no convos yet — tap someone below 👇</p>
+            {filteredConvos.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4">no convos yet — start one from the home page</p>
             ) : (
               <div className="space-y-1">
-                {convos.map((c) => (
+                {filteredConvos.map((c) => (
                   <motion.button
                     key={c.id}
                     onClick={() => navigate(`/chat/${c.id}`)}
@@ -142,26 +126,7 @@ const Chats = () => {
             )}
           </section>
         )}
-
-        <section>
-          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">strangers 👀</h2>
-          <div className="grid grid-cols-3 gap-3">
-            {filteredPeople.map((p) => (
-              <motion.button
-                key={p.id}
-                onClick={() => openDm(p)}
-                className="flex flex-col items-center gap-1 p-3 rounded-2xl bg-secondary/50 hover:bg-secondary"
-                whileTap={{ scale: 0.95 }}
-              >
-                <Avatar p={p} />
-                <span className="text-xs font-mono truncate w-full text-center">{p.username}</span>
-              </motion.button>
-            ))}
-          </div>
-          {filteredPeople.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-8">no one here yet... invite a friend 🌙</p>
-          )}
-        </section>
+        <p className="text-center text-xs text-muted-foreground py-8">find new people on the home page</p>
       </main>
 
       <BottomNav />
