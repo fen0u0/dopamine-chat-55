@@ -65,8 +65,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       setSession(s);
       const uid = s?.user.id;
-      if (event === "TOKEN_REFRESHED" && uid === lastUserId) return;
+      if (uid === lastUserId) return; // same user (token refresh / re-emit): no reload, no flicker
       lastUserId = uid;
+      setLoading(true);
       setTimeout(() => {
         loadProfile(uid).finally(() => setLoading(false));
       }, 0);
