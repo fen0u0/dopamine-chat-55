@@ -17,6 +17,7 @@ import Chat from "./pages/Chat";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Confessions from "./pages/Confessions";
+import GlobalChat from "./pages/GlobalChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App = () => (
                      <Route path="/profile" element={<Profile />} />
                      <Route path="/settings" element={<Settings />} />
                      <Route path="/confessions" element={<Confessions />} />
+                     <Route path="/global-chat" element={<GlobalChat />} />
                      <Route path="*" element={<NotFound />} />
               </Routes>
 

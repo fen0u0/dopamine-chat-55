@@ -38,6 +38,30 @@ export type Database = {
         }
         Relationships: []
       }
+      global_messages: {
+        Row: {
+          id: string
+          content: string
+          user_id: string
+          username: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          content: string
+          user_id: string
+          username: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          content?: string
+          user_id?: string
+          username?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
