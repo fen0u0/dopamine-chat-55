@@ -57,7 +57,8 @@ const rowToConfession = (
 
 const Confessions = () => {
   const navigate = useNavigate();
-  const { profile, loading } = useAuth();
+  const { session, profile, loading } = useAuth();
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [confessions, setConfessions] = useState<Confession[]>([]);
   const [profileMap, setProfileMap] = useState<Record<string, ProfileRow | undefined>>({});
   const [selectedCategory, setSelectedCategory] = useState<ConfessionCategory | "all">("all");
@@ -71,8 +72,8 @@ const Confessions = () => {
   }, [profileMap]);
 
   useEffect(() => {
-    if (!loading && !profile) navigate("/login", { replace: true });
-  }, [loading, profile, navigate]);
+    if (!loading && !session) navigate("/login", { replace: true });
+  }, [loading, session, navigate]);
 
   const fetchProfile = useCallback(async (userId: string): Promise<ProfileRow | undefined> => {
     const cached = profileMapRef.current[userId];
@@ -91,40 +92,67 @@ const Confessions = () => {
   }, []);
 
   const loadConfessions = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("confessions")
-      .select("id, content, category, user_id, created_at")
-      .order("created_at", { ascending: false })
-      .limit(200);
+    setFetching(true);
+    setLoadError(null);
 
-    if (error) {
-      toast.error("couldn't load confessions 😩");
+    try {
+      const { data, error } = await supabase
+        .from("confessions")
+        .select("id, content, category, user_id, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200);
+
+      if (error) {
+        console.error("[confessions] feed query failed", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          sessionUserId: session?.user?.id ?? null,
+        });
+        throw error;
+      }
+
+      const rows = (data ?? []) as ConfessionRow[];
+      const userIds = [...new Set(rows.map((r) => r.user_id).filter(Boolean))];
+      let pMap: Record<string, ProfileRow | undefined> = {};
+
+      if (userIds.length) {
+        const { data: profiles, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, username, avatar")
+          .in("id", userIds);
+
+        if (profileError) {
+          console.warn("[confessions] profile lookup failed; using anonymous identities", {
+            message: profileError.message,
+            details: profileError.details,
+            hint: profileError.hint,
+            code: profileError.code,
+            userIds,
+          });
+        } else {
+          pMap = (profiles ?? []).reduce<Record<string, ProfileRow>>((acc, p) => {
+            acc[p.id] = p as ProfileRow;
+            return acc;
+          }, {});
+          profileMapRef.current = pMap;
+          setProfileMap(pMap);
+        }
+      }
+
+      setConfessions(rows.map((r) => rowToConfession(r, pMap)));
+    } catch (error) {
+      console.error("[confessions] unable to load feed", error);
+      setLoadError("couldn't load the confession feed right now");
+      toast.error("couldn't load confessions");
+    } finally {
       setFetching(false);
-      return;
     }
-
-    const rows = (data ?? []) as ConfessionRow[];
-    const userIds = [...new Set(rows.map((r) => r.user_id))];
-    let pMap: Record<string, ProfileRow | undefined> = {};
-    if (userIds.length) {
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, username, avatar")
-        .in("id", userIds);
-      pMap = (profiles ?? []).reduce<Record<string, ProfileRow>>((acc, p) => {
-        acc[p.id] = p as ProfileRow;
-        return acc;
-      }, {});
-      profileMapRef.current = pMap;
-      setProfileMap(pMap);
-    }
-
-    setConfessions(rows.map((r) => rowToConfession(r, pMap)));
-    setFetching(false);
-  }, []);
+  }, [session?.user?.id]);
 
   useEffect(() => {
-    if (!profile) return;
+    if (!session) return;
     loadConfessions();
 
     const channel = supabase
@@ -155,7 +183,7 @@ const Confessions = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile, loadConfessions, fetchProfile]);
+  }, [session, loadConfessions, fetchProfile]);
 
   const currentUser = useMemo(() => getUserAnonIdentity(), []);
 
@@ -327,6 +355,13 @@ const Confessions = () => {
           {fetching ? (
             <div className="text-center py-16 text-muted-foreground">
               <p className="text-xl">loading the tea... 🫖</p>
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <p className="text-xl">{loadError}</p>
+              <button className="mt-4 rounded-full bg-primary px-4 py-2 text-sm text-primary-foreground" onClick={loadConfessions}>
+                try again
+              </button>
             </div>
           ) : displayedConfessions.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
