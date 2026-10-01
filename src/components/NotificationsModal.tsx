@@ -1,7 +1,8 @@
-import { useState } from "react";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Heart, Star, MessageCircle, Sparkles, Bell, Check } from "lucide-react";
 import { useSettings } from "@/contexts/SettingsContext";
+import { useChat } from "@/contexts/ChatContext";
 import { soundManager } from "@/lib/sounds";
 import { toast } from "sonner";
 
@@ -17,14 +18,6 @@ interface NotificationsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const initialNotifications: Notification[] = [
-  { id: "1", type: "like", name: "Sophia", time: "2m ago", read: false },
-  { id: "2", type: "superlike", name: "Luna", time: "15m ago", read: false },
-  { id: "3", type: "match", name: "Zoe", time: "1h ago", read: true },
-  { id: "4", type: "message", name: "Emma", time: "2h ago", read: true },
-  { id: "5", type: "like", name: "Mia", time: "3h ago", read: true },
-];
 
 const getIcon = (type: string) => {
   switch (type) {
@@ -58,21 +51,19 @@ const getMessage = (type: string, name: string) => {
 
 const NotificationsModal = ({ isOpen, onClose }: NotificationsModalProps) => {
   const { sounds } = useSettings();
-  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
+  const { notifications, markNotificationRead, markAllNotificationsRead } = useChat();
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleMarkAllRead = () => {
     if (sounds) soundManager.playClick();
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+    markAllNotificationsRead();
     toast.success("all notifications marked as read ✨");
   };
 
   const handleNotificationClick = (id: string) => {
     if (sounds) soundManager.playTap();
-    setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, read: true } : n
-    ));
+    markNotificationRead(id);
   };
 
   return (

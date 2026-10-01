@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, VibeProfile } from "@/lib/auth";
 import { isUuid, REACTIONS } from "@/lib/chat";
 import { toast } from "sonner";
+import { useChat } from "@/contexts/ChatContext";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface Message {
@@ -31,6 +32,7 @@ const Chat = () => {
   const navigate = useNavigate();
   const { profile, loading } = useAuth();
   const { incrementMessages } = useStats();
+  const { addNotification } = useChat();
   const endRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const typingTimer = useRef<number>();
@@ -86,7 +88,15 @@ const Chat = () => {
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` }, (p) => {
         const m = p.new as Message;
         setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
-        if (m.sender_id !== profile.id) setOtherTyping(false);
+        if (m.sender_id !== profile.id) {
+          setOtherTyping(false);
+          addNotification({
+            id: m.id,
+            type: "message",
+            name: other?.username ?? "someone",
+            time: "just now",
+          });
+        }
       })
       .on("postgres_changes", { event: "DELETE", schema: "public", table: "messages" }, (p) => {
         setMessages((prev) => prev.filter((x) => x.id !== (p.old as Message).id));
@@ -117,7 +127,7 @@ const Chat = () => {
       supabase.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [id, profile, navigate]);
+  }, [id, profile, navigate, other?.username, addNotification]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });

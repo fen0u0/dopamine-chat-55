@@ -11,10 +11,22 @@ interface ChatState {
   [chatId: string]: Message[];
 }
 
+export interface AppNotification {
+  id: string;
+  type: "message";
+  name: string;
+  time: string;
+  read: boolean;
+}
+
 interface ChatContextType {
   messages: ChatState;
+  notifications: AppNotification[];
   addMessage: (chatId: string, message: Message) => void;
   initializeChat: (chatId: string, initialMessages: Message[]) => void;
+  addNotification: (notification: Omit<AppNotification, "read">) => void;
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
 }
 
 const defaultMessages: Message[] = [
@@ -28,6 +40,7 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [messages, setMessages] = useState<ChatState>({});
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   const initializeChat = (chatId: string, initialMessages: Message[]) => {
     setMessages((prev) => {
@@ -43,8 +56,23 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  const addNotification = (notification: Omit<AppNotification, "read">) => {
+    setNotifications((prev) => [
+      { ...notification, read: false },
+      ...prev.filter((item) => item.id !== notification.id),
+    ]);
+  };
+
+  const markNotificationRead = (id: string) => {
+    setNotifications((prev) => prev.map((item) => item.id === id ? { ...item, read: true } : item));
+  };
+
+  const markAllNotificationsRead = () => {
+    setNotifications((prev) => prev.map((item) => ({ ...item, read: true })));
+  };
+
   return (
-    <ChatContext.Provider value={{ messages, addMessage, initializeChat }}>
+    <ChatContext.Provider value={{ messages, notifications, addMessage, initializeChat, addNotification, markNotificationRead, markAllNotificationsRead }}>
       {children}
     </ChatContext.Provider>
   );
