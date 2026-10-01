@@ -6,23 +6,23 @@ import BottomNav from "@/components/BottomNav";
 import HomeContent from "@/components/HomeContent";
 import GemsBadge from "@/components/GemsBadge";
 import { profiles } from "@/data/profiles";
+import { useAuth } from "@/lib/auth";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { profile, loading } = useAuth();
   const [userMood, setUserMood] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    const user = localStorage.getItem("currentUser");
-    if (!user) {
+    // Wait for auth to settle before redirecting — avoids login/home bounce loops
+    if (loading) return;
+    if (!profile) {
       navigate("/login", { replace: true });
       return;
     }
-
     const savedMood = localStorage.getItem("userMood");
-    if (savedMood) {
-      setUserMood(savedMood);
-    }
-  }, [navigate]);
+    if (savedMood) setUserMood(savedMood);
+  }, [loading, profile, navigate]);
 
   const matchCount = userMood 
     ? profiles.filter(p => p.mood === userMood).length 

@@ -55,6 +55,11 @@ export const generateAnonIdentity = () => {
 
 export const getUserAnonIdentity = (): { name: string; avatar: string } => {
   const USER_ANON_KEY = "vibe_user_anon";
+  // Stable identity: always prefer the signed-in profile (synced by AuthProvider)
+  const profileName = localStorage.getItem("currentUser");
+  if (profileName) {
+    return { name: profileName, avatar: localStorage.getItem("userAvatar") ?? "👻" };
+  }
   try {
     const stored = localStorage.getItem(USER_ANON_KEY);
     if (stored) {
