@@ -158,6 +158,18 @@ const Chat = () => {
     sendText(t);
   };
 
+  const handleDeleteChat = async () => {
+    if (!profile || !id || !window.confirm("Delete this chat and all of its messages permanently?")) return;
+    const { error } = await supabase.from("conversations").delete().eq("id", id);
+    if (error) {
+      console.error("[chat] failed to delete conversation", { code: error.code, message: error.message, details: error.details });
+      toast.error("couldn't delete chat");
+      return;
+    }
+    toast.success("chat and messages permanently deleted");
+    navigate("/chats", { replace: true });
+  };
+
   const handleTyping = (v: string) => {
     setNewMessage(v);
     const now = Date.now();
@@ -296,7 +308,12 @@ const Chat = () => {
         </div>
       </div>
 
-      <ChatOptionsModal isOpen={showOptions} onClose={() => setShowOptions(false)} profileName={name} />
+      <ChatOptionsModal
+        isOpen={showOptions}
+        onClose={() => setShowOptions(false)}
+        profileName={name}
+        onDeleteChat={handleDeleteChat}
+      />
     </div>
   );
 };

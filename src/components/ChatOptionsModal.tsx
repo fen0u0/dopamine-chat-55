@@ -6,6 +6,7 @@ interface ChatOptionsModalProps {
   isOpen: boolean;
   onClose: () => void;
   profileName: string;
+  onDeleteChat: () => Promise<void>;
 }
 
 const ChatOptionsModal = ({ isOpen, onClose, profileName }: ChatOptionsModalProps) => {
@@ -47,8 +48,8 @@ const ChatOptionsModal = ({ isOpen, onClose, profileName }: ChatOptionsModalProp
     {
       icon: <Trash2 className="w-5 h-5 text-destructive" />,
       label: "Delete chat",
-      onClick: () => {
-        toast.success("Chat deleted");
+      onClick: async () => {
+        await onDeleteChat();
         onClose();
       },
       danger: true,
