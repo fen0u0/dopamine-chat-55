@@ -92,41 +92,64 @@ const Confessions = () => {
   }, []);
 
   const loadConfessions = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("confessions")
-      .select("id, content, category, user_id, created_at")
-      .order("created_at", { ascending: false })
-      .limit(200);
-
-    if (error) {
-      console.error("[confessions] failed to load feed", error);
-      setLoadError("couldn't load the confession feed right now");
-      toast.error("couldn't load confessions 😩");
-      setFetching(false);
-      return;
-    }
-
+    setFetching(true);
     setLoadError(null);
 
-    const rows = (data ?? []) as ConfessionRow[];
-    const userIds = [...new Set(rows.map((r) => r.user_id))];
-    let pMap: Record<string, ProfileRow | undefined> = {};
-    if (userIds.length) {
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("id, username, avatar")
-        .in("id", userIds);
-      pMap = (profiles ?? []).reduce<Record<string, ProfileRow>>((acc, p) => {
-        acc[p.id] = p as ProfileRow;
-        return acc;
-      }, {});
-      profileMapRef.current = pMap;
-      setProfileMap(pMap);
-    }
+    try {
+      const { data, error } = await supabase
+        .from("confessions")
+        .select("id, content, category, user_id, created_at")
+        .order("created_at", { ascending: false })
+        .limit(200);
 
-    setConfessions(rows.map((r) => rowToConfession(r, pMap)));
-    setFetching(false);
-  }, []);
+      if (error) {
+        console.error("[confessions] feed query failed", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          sessionUserId: session?.user?.id ?? null,
+        });
+        throw error;
+      }
+
+      const rows = (data ?? []) as ConfessionRow[];
+      const userIds = [...new Set(rows.map((r) => r.user_id).filter(Boolean))];
+      let pMap: Record<string, ProfileRow | undefined> = {};
+
+      if (userIds.length) {
+        const { data: profiles, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, username, avatar")
+          .in("id", userIds);
+
+        if (profileError) {
+          console.warn("[confessions] profile lookup failed; using anonymous identities", {
+            message: profileError.message,
+            details: profileError.details,
+            hint: profileError.hint,
+            code: profileError.code,
+            userIds,
+          });
+        } else {
+          pMap = (profiles ?? []).reduce<Record<string, ProfileRow>>((acc, p) => {
+            acc[p.id] = p as ProfileRow;
+            return acc;
+          }, {});
+          profileMapRef.current = pMap;
+          setProfileMap(pMap);
+        }
+      }
+
+      setConfessions(rows.map((r) => rowToConfession(r, pMap)));
+    } catch (error) {
+      console.error("[confessions] unable to load feed", error);
+      setLoadError("couldn't load the confession feed right now");
+      toast.error("couldn't load confessions");
+    } finally {
+      setFetching(false);
+    }
+  }, [session?.user?.id]);
 
   useEffect(() => {
     if (!session) return;
