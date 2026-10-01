@@ -16,27 +16,35 @@ export type Database = {
     Tables: {
       confessions: {
         Row: {
-          id: string
-          content: string
           category: string
-          user_id: string
+          content: string
           created_at: string
+          id: string
+          user_id: string
         }
         Insert: {
-          id?: string
+          category?: string
           content: string
-          category: string
-          user_id?: string
           created_at?: string
+          id?: string
+          user_id: string
         }
         Update: {
-          id?: string
-          content?: string
           category?: string
-          user_id?: string
+          content?: string
           created_at?: string
+          id?: string
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "confessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversations: {
         Row: {
