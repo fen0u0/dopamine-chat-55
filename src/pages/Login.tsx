@@ -27,15 +27,20 @@ const Login = () => {
   const handleGuest = async () => {
     setBusy(true);
     setError(null);
-    if (!session) {
-      const { error: e } = await supabase.auth.signInAnonymously();
-      if (e) {
-        setBusy(false);
-        return setError(e.message ?? "couldn't sign in");
+    try {
+      if (!session) {
+        const { error: e } = await supabase.auth.signInAnonymously();
+        if (e) {
+          setError(e.message ?? "couldn't sign in");
+          return;
+        }
       }
+      // AuthProvider loads the guest profile after the session changes. Let its
+      // guarded effect navigate only after the profile is ready, so Home does
+      // not redirect back to Login while the onboarding wizard is mounting.
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
-    navigate("/", { replace: true });
   };
 
   const handleGoogle = async () => {
