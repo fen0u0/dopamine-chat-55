@@ -57,7 +57,8 @@ const rowToConfession = (
 
 const Confessions = () => {
   const navigate = useNavigate();
-  const { profile, loading } = useAuth();
+  const { session, profile, loading } = useAuth();
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [confessions, setConfessions] = useState<Confession[]>([]);
   const [profileMap, setProfileMap] = useState<Record<string, ProfileRow | undefined>>({});
   const [selectedCategory, setSelectedCategory] = useState<ConfessionCategory | "all">("all");
@@ -71,8 +72,8 @@ const Confessions = () => {
   }, [profileMap]);
 
   useEffect(() => {
-    if (!loading && !profile) navigate("/login", { replace: true });
-  }, [loading, profile, navigate]);
+    if (!loading && !session) navigate("/login", { replace: true });
+  }, [loading, session, navigate]);
 
   const fetchProfile = useCallback(async (userId: string): Promise<ProfileRow | undefined> => {
     const cached = profileMapRef.current[userId];
@@ -98,10 +99,14 @@ const Confessions = () => {
       .limit(200);
 
     if (error) {
+      console.error("[confessions] failed to load feed", error);
+      setLoadError("couldn't load the confession feed right now");
       toast.error("couldn't load confessions 😩");
       setFetching(false);
       return;
     }
+
+    setLoadError(null);
 
     const rows = (data ?? []) as ConfessionRow[];
     const userIds = [...new Set(rows.map((r) => r.user_id))];
@@ -124,7 +129,7 @@ const Confessions = () => {
   }, []);
 
   useEffect(() => {
-    if (!profile) return;
+    if (!session) return;
     loadConfessions();
 
     const channel = supabase
@@ -155,7 +160,7 @@ const Confessions = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile, loadConfessions, fetchProfile]);
+  }, [session, loadConfessions, fetchProfile]);
 
   const currentUser = useMemo(() => getUserAnonIdentity(), []);
 
@@ -327,6 +332,13 @@ const Confessions = () => {
           {fetching ? (
             <div className="text-center py-16 text-muted-foreground">
               <p className="text-xl">loading the tea... 🫖</p>
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <p className="text-xl">{loadError}</p>
+              <button className="mt-4 rounded-full bg-primary px-4 py-2 text-sm text-primary-foreground" onClick={loadConfessions}>
+                try again
+              </button>
             </div>
           ) : displayedConfessions.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
