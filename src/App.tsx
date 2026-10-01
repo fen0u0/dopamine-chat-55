@@ -14,6 +14,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Chats from "./pages/Chats";
 import Chat from "./pages/Chat";
+import GlobalChat from "./pages/GlobalChat";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Confessions from "./pages/Confessions";
@@ -38,6 +39,7 @@ const App = () => (
                      <Route path="/login" element={<Login />} />
                      <Route path="/chats" element={<Chats />} />
                      <Route path="/chat/:id" element={<Chat />} />
+                     <Route path="/global-chat" element={<GlobalChat />} />
                      <Route path="/profile" element={<Profile />} />
                      <Route path="/settings" element={<Settings />} />
                      <Route path="/confessions" element={<Confessions />} />

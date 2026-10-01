@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, User, Ghost } from "lucide-react";
+import { Heart, MessageCircle, User, Ghost, Globe2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { matches } from "@/data/profiles";
@@ -20,6 +20,7 @@ const BottomNav = () => {
   const navItems: NavItem[] = [
     { icon: <Heart className="w-6 h-6" />, label: "home", path: "/" },
     { icon: <MessageCircle className="w-6 h-6" />, label: "chats", path: "/chats", badge: unreadCount },
+    { icon: <Globe2 className="w-6 h-6" />, label: "global", path: "/global-chat" },
     { icon: <Ghost className="w-6 h-6" />, label: "confess", path: "/confessions" },
     { icon: <User className="w-6 h-6" />, label: "profile", path: "/profile" },
   ];
