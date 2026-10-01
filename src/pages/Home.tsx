@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Settings, Sparkles, Users } from "lucide-react";
+import { Settings, Sparkles, Users, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import BottomNav from "@/components/BottomNav";
 import HomeContent from "@/components/HomeContent";
@@ -12,6 +12,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { profile, loading } = useAuth();
   const [userMood, setUserMood] = useState<string | undefined>(undefined);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     // Wait for auth to settle before redirecting — avoids login/home bounce loops
@@ -73,6 +74,17 @@ const Home = () => {
       </header>
 
       <main className="px-4 pt-6">
+        <label className="mb-5 flex items-center gap-3 rounded-2xl border border-border/50 bg-secondary/30 px-4 py-3">
+          <Search className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+          <input
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="search users, moods, or interests"
+            aria-label="Search users"
+            className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
+          />
+        </label>
+
         <div className="flex items-center gap-2 mb-6 px-2">
           <Sparkles className="w-4 h-4 text-coral" />
           <span className="text-sm font-medium text-muted-foreground">
@@ -84,7 +96,7 @@ const Home = () => {
           </div>
         </div>
 
-        <HomeContent userMood={userMood} />
+        <HomeContent userMood={userMood} searchTerm={searchTerm} />
 
         <motion.p 
           className="text-center text-xs text-muted-foreground/40 mt-12 tracking-wide"

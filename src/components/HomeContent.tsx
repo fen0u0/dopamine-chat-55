@@ -1,8 +1,12 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { profiles } from "@/data/profiles";
+import { useQuery } from "@tanstack/react-query";
+import { Search } from "lucide-react";
+import { profiles as demoProfiles } from "@/data/profiles";
 import { Profile } from "@/types/profile";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import ProfileCardExpanded from "./ProfileCardExpanded";
 import { 
@@ -184,18 +188,51 @@ const gridPositions = [
 
 interface HomeContentProps {
   userMood?: string;
+  searchTerm?: string;
 }
 
-const HomeContent = ({ userMood }: HomeContentProps) => {
+const HomeContent = ({ userMood, searchTerm = "" }: HomeContentProps) => {
   const navigate = useNavigate();
+  const { profile: currentProfile } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [hoveredProfile, setHoveredProfile] = useState<string | null>(null);
 
-  const filteredProfiles = userMood 
-    ? profiles.filter(p => p.mood === userMood)
-    : profiles;
+  const { data: liveProfiles = [], isLoading } = useQuery({
+    queryKey: ["home-profiles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, avatar, mood, bio_currently, into_tags, onboarding_completed")
+        .eq("onboarding_completed", true)
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []).filter((item) => item.id !== currentProfile?.id).map((item) => ({
+        id: item.id,
+        name: item.username,
+        age: 0,
+        bio: item.bio_currently || "here to vibe and connect",
+        images: item.avatar ? [item.avatar] : [],
+        interests: item.into_tags ?? [],
+        isOnline: false,
+        mood: item.mood ?? undefined,
+        vibe: "good energy",
+      } satisfies Profile));
+    },
+    enabled: Boolean(currentProfile),
+  });
 
-  const displayProfiles = filteredProfiles.length > 0 ? filteredProfiles : profiles;
+  const availableProfiles = liveProfiles.length > 0 ? liveProfiles : demoProfiles;
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredProfiles = availableProfiles.filter((p) => {
+    const matchesMood = !userMood || p.mood === userMood;
+    const matchesSearch = !normalizedSearch || [p.name, p.bio, p.mood, p.vibe, ...p.interests]
+      .filter(Boolean)
+      .some((value) => value!.toLowerCase().includes(normalizedSearch));
+    return matchesMood && matchesSearch;
+  });
+
+  const displayProfiles = filteredProfiles.length > 0 ? filteredProfiles : [];
+
 
   const handleAvatarClick = (profile: Profile) => {
     setSelectedProfile(profile);
