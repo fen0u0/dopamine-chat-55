@@ -13,11 +13,16 @@ export interface VibeProfile {
   green_flags?: string[];
   red_flags?: string[];
   into_tags?: string[];
+  looking_for?: string | null;
+  anonymity?: string | null;
+  energy?: string | null;
+  active_hours?: string | null;
+  reply_speed?: string | null;
   onboarding_completed?: boolean;
 }
 
 export const PROFILE_COLUMNS =
-  "id, username, avatar, mood, aura_color, bio_currently, unpopular_opinion, green_flags, red_flags, into_tags, onboarding_completed";
+  "id, username, avatar, mood, aura_color, bio_currently, unpopular_opinion, green_flags, red_flags, into_tags, looking_for, anonymity, energy, active_hours, reply_speed, onboarding_completed";
 
 interface AuthContextType {
   session: Session | null;

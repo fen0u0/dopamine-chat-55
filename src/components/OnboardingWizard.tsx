@@ -20,6 +20,11 @@ const INTO = ["coffee ☕", "music 🎧", "gaming 🎮", "travel ✈️", "anime
 const GREEN = ["replies fast", "sends memes", "good listener", "no ego", "late-night talks", "hypes you up", "shares playlists"];
 const RED = ["dry texter", "leaves on read", "pineapple pizza", "3am overthinker", "too many tabs open", "says 'k'", "horoscope believer"];
 const AVATARS = ["👻", "👽", "🦊", "🐸", "🦋", "🐙", "🌙", "🍄", "🪐", "🧃", "🦄", "🐈"];
+const LOOKING_FOR = ["random convos", "new friends", "late-night talks", "someone to listen"];
+const ANONYMITY = ["100% anon", "mostly anon", "open book"];
+const ENERGY = ["unhinged welcomed", "chill only", "deep talks", "go with the flow"];
+const ACTIVE_HOURS = ["morning person", "daytime", "night owl", "all over the place"];
+const REPLY_SPEED = ["instant", "pretty quick", "when I can", "chaotic"];
 const THEMES: Array<{ id: ThemeMode; label: string; icon: string; className: string }> = [
   { id: "dark", label: "dark", icon: "◐", className: "bg-zinc-800" },
   { id: "light", label: "light", icon: "☼", className: "bg-white" },
@@ -62,6 +67,11 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
   const [aura, setAura] = useState("violet");
   const [into, setInto] = useState<string[]>([]);
   const [custom, setCustom] = useState("");
+  const [lookingFor, setLookingFor] = useState(LOOKING_FOR[0]);
+  const [anonymity, setAnonymity] = useState(ANONYMITY[0]);
+  const [energy, setEnergy] = useState(ENERGY[0]);
+  const [activeHours, setActiveHours] = useState(ACTIVE_HOURS[2]);
+  const [replySpeed, setReplySpeed] = useState(REPLY_SPEED[2]);
   const [currently, setCurrently] = useState("");
   const [opinion, setOpinion] = useState("");
   const [green, setGreen] = useState<string[]>([]);
@@ -77,6 +87,11 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
     setAvatar(profile.avatar || AVATARS[0]);
     setAura(profile.aura_color || "violet");
     setInto(profile.into_tags ?? []);
+    setLookingFor(profile.looking_for ?? LOOKING_FOR[0]);
+    setAnonymity(profile.anonymity ?? ANONYMITY[0]);
+    setEnergy(profile.energy ?? ENERGY[0]);
+    setActiveHours(profile.active_hours ?? ACTIVE_HOURS[2]);
+    setReplySpeed(profile.reply_speed ?? REPLY_SPEED[2]);
     setCurrently(profile.bio_currently ?? "");
     setOpinion(profile.unpopular_opinion ?? "");
     setGreen(profile.green_flags ?? []);
@@ -119,6 +134,11 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
         avatar,
         aura_color: aura,
         into_tags: into,
+        looking_for: lookingFor,
+        anonymity,
+        energy,
+        active_hours: activeHours,
+        reply_speed: replySpeed,
         bio_currently: currently.trim() || null,
         unpopular_opinion: opinion.trim() || null,
         green_flags: green,
@@ -179,6 +199,28 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
       </div>
     </div>,
     <div key="1" className="space-y-5">
+      <div>
+        <h2 className="text-2xl font-bold">set your vibe</h2>
+        <p className="mt-1 text-sm text-muted-foreground">A few quick answers help strangers know how to meet you.</p>
+      </div>
+      {[
+        ["here for", LOOKING_FOR, lookingFor, setLookingFor],
+        ["anonymity", ANONYMITY, anonymity, setAnonymity],
+        ["energy", ENERGY, energy, setEnergy],
+        ["active hours", ACTIVE_HOURS, activeHours, setActiveHours],
+        ["reply speed", REPLY_SPEED, replySpeed, setReplySpeed],
+      ].map(([label, options, value, setValue]) => (
+        <div key={label as string} className="space-y-2">
+          <p className="font-jb text-[11px] text-muted-foreground">// {label as string}</p>
+          <div className="flex flex-wrap gap-2">
+            {(options as string[]).map((option) => (
+              <Chip key={option} on={value === option} onClick={() => (setValue as (next: string) => void)(option)}>{option}</Chip>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>,
+    <div key="2" className="space-y-5">
       <h2 className="text-2xl font-bold">what are you into? 🌀</h2>
       <div className="flex flex-wrap gap-2">
         {[...INTO, ...into.filter((t) => !INTO.includes(t))].map((t) => (
@@ -198,7 +240,7 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
         </button>
       </form>
     </div>,
-    <div key="2" className="space-y-4">
+    <div key="3" className="space-y-4">
       <h2 className="text-2xl font-bold">currently & hot takes 🔥</h2>
       <label className="block space-y-1">
         <span className="font-jb text-[11px] text-muted-foreground">// currently (on repeat, rabbit holes)</span>
@@ -211,7 +253,7 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
           className="w-full px-4 py-3 rounded-2xl bg-foreground/5 border border-foreground/10 resize-none focus:outline-none focus:ring-2 focus:ring-primary/50" />
       </label>
     </div>,
-    <div key="3" className="space-y-5">
+    <div key="4" className="space-y-5">
       <h2 className="text-2xl font-bold">vibe check ✅🚩</h2>
       <div className="space-y-2">
         <p className="font-jb text-[11px] text-muted-foreground">// green flags</p>
@@ -236,7 +278,7 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
           <motion.div className="vibe-glass w-full max-w-md p-6 space-y-6 overflow-hidden"
             initial={{ y: 40, scale: 0.96 }} animate={{ y: 0, scale: 1 }} transition={spring}>
             <div className="flex items-center justify-between">
-              <span className="font-jb text-xs text-muted-foreground">[{String(step + 1).padStart(2, "0")}/04]</span>
+              <span className="font-jb text-xs text-muted-foreground">[{String(step + 1).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}]</span>
               {editMode ? (
                 <button onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-foreground">
                   <X className="w-5 h-5" />
@@ -248,7 +290,7 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
               )}
             </div>
             <div className="h-px w-full bg-foreground/10 overflow-hidden">
-              <motion.div className="h-full bg-primary" animate={{ width: `${((step + 1) / 4) * 100}%` }} transition={spring} />
+              <motion.div className="h-full bg-primary" animate={{ width: `${((step + 1) / steps.length) * 100}%` }} transition={spring} />
             </div>
 
             <div className="relative min-h-[320px]">
@@ -267,7 +309,7 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
               {step > 0 && (
                 <button onClick={() => go(-1)} className="px-5 py-3 rounded-2xl border border-foreground/10 font-jb text-sm">back</button>
               )}
-              {step < 3 ? (
+              {step < steps.length - 1 ? (
                 <button onClick={() => go(1)} disabled={step === 0 && !aliasOk}
                   className="flex-1 py-3 rounded-2xl bg-primary text-primary-foreground font-semibold disabled:opacity-40">
                   next →
