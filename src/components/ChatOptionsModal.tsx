@@ -9,7 +9,7 @@ interface ChatOptionsModalProps {
   onDeleteChat: () => Promise<void>;
 }
 
-const ChatOptionsModal = ({ isOpen, onClose, profileName }: ChatOptionsModalProps) => {
+const ChatOptionsModal = ({ isOpen, onClose, profileName, onDeleteChat }: ChatOptionsModalProps) => {
   const options = [
     {
       icon: <BellOff className="w-5 h-5" />,

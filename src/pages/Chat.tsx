@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Heart, Smile, MoreVertical } from "lucide-react";
+import { ArrowLeft, Send, Heart, Smile, MoreVertical, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import ChatOptionsModal from "@/components/ChatOptionsModal";
 import { useStats } from "@/contexts/StatsContext";
@@ -158,6 +158,20 @@ const Chat = () => {
     sendText(t);
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!profile || !window.confirm("Delete this message permanently?")) return;
+
+    setMessages((previous) => previous.filter((message) => message.id !== messageId));
+    const { error } = await supabase.from("messages").delete().eq("id", messageId).eq("sender_id", profile.id);
+    if (error) {
+      console.error("[chat] failed to delete message", { code: error.code, message: error.message, details: error.details, messageId });
+      toast.error("couldn't delete message");
+      return;
+    }
+    setReactions((previous) => previous.filter((reaction) => reaction.message_id !== messageId));
+    toast.success("message permanently deleted");
+  };
+
   const handleDeleteChat = async () => {
     if (!profile || !id || !window.confirm("Delete this chat and all of its messages permanently?")) return;
     const { error } = await supabase.from("conversations").delete().eq("id", id);
@@ -232,18 +246,31 @@ const Chat = () => {
               const grouped = rx.reduce<Record<string, number>>((a, r) => ({ ...a, [r.emoji]: (a[r.emoji] || 0) + 1 }), {});
               return (
                 <motion.div key={msg.id} className={cn("flex flex-col", mine ? "items-end" : "items-start")} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-                  <button
-                    onClick={() => setReactingTo(reactingTo === msg.id ? null : msg.id)}
-                    className={cn(
-                      "max-w-[75%] px-4 py-3 rounded-2xl text-sm text-left break-words",
-                      mine ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-secondary border border-foreground/5 rounded-bl-sm"
+                  <div className={cn("flex items-center gap-2 max-w-full", mine && "flex-row-reverse")}>
+                    <button
+                      onClick={() => setReactingTo(reactingTo === msg.id ? null : msg.id)}
+                      className={cn(
+                        "max-w-[75%] px-4 py-3 rounded-2xl text-sm text-left break-words",
+                        mine ? "bg-primary text-primary-foreground rounded-br-sm" : "bg-secondary border border-foreground/5 rounded-bl-sm"
+                      )}
+                    >
+                      {msg.text}
+                      <div className="text-[10px] mt-1 opacity-60 font-mono">
+                        {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </div>
+                    </button>
+                    {mine && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteMessage(msg.id)}
+                        className="p-1.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        aria-label="Delete message permanently"
+                        title="Delete message permanently"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     )}
-                  >
-                    {msg.text}
-                    <div className="text-[10px] mt-1 opacity-60 font-mono">
-                      {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </div>
-                  </button>
+                  </div>
                   {reactingTo === msg.id && (
                     <motion.div className="flex gap-1 mt-1 glass rounded-full px-2 py-1" initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
                       {REACTIONS.map((e) => (
