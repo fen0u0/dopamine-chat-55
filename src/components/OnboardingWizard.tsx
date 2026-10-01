@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { randomAlias } from "@/lib/chat";
 import { useAliasCheck } from "@/lib/useAliasCheck";
 import { cn } from "@/lib/utils";
+import { useSettings, type ThemeMode } from "@/contexts/SettingsContext";
 
 export const AURAS: Record<string, string> = {
   violet: "from-primary to-accent",
@@ -18,6 +19,17 @@ export const AURAS: Record<string, string> = {
 const INTO = ["coffee ☕", "music 🎧", "gaming 🎮", "travel ✈️", "anime 🌸", "books 📚", "memes 🐸", "gym 💪", "art 🎨", "films 🎬", "cooking 🍜", "astrology 🔮"];
 const GREEN = ["replies fast", "sends memes", "good listener", "no ego", "late-night talks", "hypes you up", "shares playlists"];
 const RED = ["dry texter", "leaves on read", "pineapple pizza", "3am overthinker", "too many tabs open", "says 'k'", "horoscope believer"];
+const AVATARS = ["👻", "👽", "🦊", "🐸", "🦋", "🐙", "🌙", "🍄", "🪐", "🧃", "🦄", "🐈"];
+const THEMES: Array<{ id: ThemeMode; label: string; icon: string; className: string }> = [
+  { id: "dark", label: "dark", icon: "◐", className: "bg-zinc-800" },
+  { id: "light", label: "light", icon: "☼", className: "bg-white" },
+  { id: "void", label: "void", icon: "◌", className: "bg-black" },
+  { id: "neon", label: "neon", icon: "✦", className: "bg-fuchsia-500" },
+  { id: "sunset", label: "sunset", icon: "☀", className: "bg-orange-500" },
+  { id: "forest", label: "forest", icon: "✿", className: "bg-emerald-700" },
+  { id: "candy", label: "candy", icon: "♡", className: "bg-pink-400" },
+  { id: "grey", label: "grey", icon: "◒", className: "bg-slate-500" },
+];
 
 const spring = { type: "spring" as const, stiffness: 380, damping: 32 };
 
@@ -42,9 +54,11 @@ const Chip = ({ on, children, onClick }: { on: boolean; children: React.ReactNod
 
 const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
   const { session, profile, refreshProfile } = useAuth();
+  const settings = useSettings();
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
   const [alias, setAlias] = useState("");
+  const [avatar, setAvatar] = useState(AVATARS[0]);
   const [aura, setAura] = useState("violet");
   const [into, setInto] = useState<string[]>([]);
   const [custom, setCustom] = useState("");
@@ -60,6 +74,7 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
     if (!open || !profile) return;
     setStep(0);
     setAlias(profile.username);
+    setAvatar(profile.avatar || AVATARS[0]);
     setAura(profile.aura_color || "violet");
     setInto(profile.into_tags ?? []);
     setCurrently(profile.bio_currently ?? "");
@@ -73,11 +88,15 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
     set(list.includes(v) ? list.filter((x) => x !== v) : [...list, v]);
 
   const go = (d: number) => { setDir(d); setStep((s) => s + d); };
-  const aliasOk = status === "available" || status === "idle";
+  const aliasOk = alias.trim().length >= 3 && (status === "available" || status === "idle");
 
   // Skip: keep the username picked at login, just mark onboarding done
   const skip = async () => {
-    if (!session) return;
+    if (!session || !alias.trim()) {
+      setErr("choose a username before skipping");
+      setStep(0);
+      return;
+    }
     setSaving(true);
     await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", session.user.id);
     setSaving(false);
@@ -86,13 +105,18 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
   };
 
   const finish = async () => {
-    if (!session) return;
+    if (!session || !alias.trim()) {
+      setErr("choose a username before you enter");
+      setStep(0);
+      return;
+    }
     setSaving(true);
     setErr(null);
     const { error } = await supabase
       .from("profiles")
       .update({
-        username: alias,
+        username: alias.trim(),
+        avatar,
         aura_color: aura,
         into_tags: into,
         bio_currently: currently.trim() || null,
@@ -114,34 +138,45 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
 
   const steps = [
     <div key="0" className="space-y-5">
-      <h2 className="text-2xl font-bold">pick your aura ✨</h2>
-      <div className="grid grid-cols-3 gap-3">
-        {Object.entries(AURAS).map(([k, g]) => (
-          <motion.button key={k} whileTap={{ scale: 0.9 }} onClick={() => setAura(k)}
-            className={cn("aspect-square rounded-2xl bg-gradient-to-br flex items-end p-2 transition-all", g,
-              aura === k ? "ring-2 ring-foreground scale-105" : "opacity-70")}>
-            <span className="font-jb text-[10px] text-foreground">{k}</span>
-          </motion.button>
-        ))}
+      <div>
+        <h2 className="text-2xl font-bold">make your first impression</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Pick a name, face, and the look that feels like you.</p>
       </div>
-      {editMode ? (<>
-      <div className="relative">
-        <input value={alias} maxLength={20}
-          onChange={(e) => setAlias(e.target.value.toLowerCase().replace(/\s/g, "_"))}
-          className="w-full px-4 py-3 pr-12 rounded-2xl bg-foreground/5 border border-foreground/10 font-jb focus:outline-none focus:ring-2 focus:ring-primary/50" />
-        <button onClick={() => setAlias(randomAlias())} aria-label="Reroll alias"
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary">
-          <Dices className="w-5 h-5" />
-        </button>
+      <label className="block space-y-2">
+        <span className="font-jb text-[11px] text-muted-foreground">// username (required)</span>
+        <div className="relative">
+          <input value={alias} maxLength={20} required autoFocus
+            onChange={(e) => setAlias(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+            placeholder="choose a username"
+            className="w-full px-4 py-3 pr-12 rounded-2xl bg-foreground/5 border border-foreground/10 font-jb focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <button type="button" onClick={() => setAlias(randomAlias())} aria-label="Generate username"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary">
+            <Dices className="w-5 h-5" />
+          </button>
+        </div>
+        <span className="font-jb text-xs">
+          {status === "checking" ? <span className="text-muted-foreground">checking…</span>
+            : status === "available" ? <span className="text-primary">✓ available</span>
+            : message ? <span className="text-destructive">{message}</span> : null}
+        </span>
+      </label>
+      <div className="space-y-2">
+        <p className="font-jb text-[11px] text-muted-foreground">// choose your face</p>
+        <div className="grid grid-cols-6 gap-2">
+          {AVATARS.map((a) => <button type="button" key={a} onClick={() => setAvatar(a)} aria-label={`Use ${a} avatar`}
+            className={cn("flex aspect-square items-center justify-center rounded-xl bg-foreground/5 text-2xl transition-all", avatar === a ? "ring-2 ring-primary bg-primary/10 scale-105" : "opacity-70 hover:opacity-100")}>{a}</button>)}
+        </div>
       </div>
-      <p className="font-jb text-xs h-4">
-        {status === "checking" ? <span className="text-muted-foreground">checking…</span>
-          : status === "available" ? <span className="text-primary">✓ available</span>
-          : message ? <span className="text-destructive">{message}</span> : null}
-      </p>
-      </>) : (
-        <p className="font-jb text-sm text-muted-foreground">you're <span className="text-foreground">@{alias}</span> — change it anytime in your profile</p>
-      )}
+      <div className="space-y-2">
+        <p className="font-jb text-[11px] text-muted-foreground">// what should your space feel like?</p>
+        <div className="grid grid-cols-4 gap-2">
+          {THEMES.map((theme) => <button type="button" key={theme.id} onClick={() => settings.updateSetting("theme", theme.id)}
+            className={cn("rounded-xl border border-foreground/10 p-2 text-xs transition-all", settings.theme === theme.id ? "border-primary bg-primary/10 ring-1 ring-primary" : "bg-foreground/5 hover:bg-foreground/10")}>
+            <span className={cn("mx-auto mb-1 flex size-5 items-center justify-center rounded-full text-[10px] text-white", theme.className)}>{theme.icon}</span>
+            {theme.label}
+          </button>)}
+        </div>
+      </div>
     </div>,
     <div key="1" className="space-y-5">
       <h2 className="text-2xl font-bold">what are you into? 🌀</h2>
