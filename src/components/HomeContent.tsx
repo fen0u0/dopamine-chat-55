@@ -146,19 +146,19 @@ const profileIcons: Record<string, React.ElementType> = {
 };
 
 const colorClasses = {
-  1: "border-rose text-rose",
-  2: "border-coral text-coral",
-  3: "border-peach text-peach",
-  4: "border-accent text-accent",
-  5: "border-primary text-primary",
+  1: "border-muted-foreground/45 text-muted-foreground",
+  2: "border-primary/60 text-primary",
+  3: "border-accent/60 text-accent",
+  4: "border-muted-foreground/60 text-foreground",
+  5: "border-primary/80 text-primary",
 };
 
 const glowClasses = {
-  1: "shadow-rose/30",
-  2: "shadow-coral/30",
-  3: "shadow-peach/30",
-  4: "shadow-accent/30",
-  5: "shadow-primary/30",
+  1: "shadow-muted-foreground/20",
+  2: "shadow-primary/20",
+  3: "shadow-accent/20",
+  4: "shadow-muted-foreground/20",
+  5: "shadow-primary/25",
 };
 
 const sizeClasses = {
