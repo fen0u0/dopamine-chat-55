@@ -80,10 +80,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => sub.subscription.unsubscribe();
   }, [loadProfile]);
 
-  const refreshProfile = useCallback(
-    () => loadProfile(session?.user.id),
-    [loadProfile, session]
-  );
+  // Read the live session (not a possibly-stale closure) so a just-created
+  // guest never gets their fresh profile wiped right after sign-in.
+  const refreshProfile = useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    await loadProfile(data.session?.user.id);
+  }, [loadProfile]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
