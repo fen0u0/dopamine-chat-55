@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -43,7 +43,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<VibeProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const reqId = useRef(0);
   const loadProfile = useCallback(async (userId: string | undefined) => {
+    // Sequence guard: a slow, stale lookup (e.g. fired before the guest profile
+    // was saved) must never overwrite a newer result with "no profile".
+    const id = ++reqId.current;
     if (!userId) {
       setProfile(null);
       syncLegacyStorage(null);
@@ -54,6 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .select(PROFILE_COLUMNS)
       .eq("id", userId)
       .maybeSingle();
+    if (id !== reqId.current) return;
     const p = (data as VibeProfile | null) ?? null;
     setProfile(p);
     syncLegacyStorage(p);
@@ -75,10 +80,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => sub.subscription.unsubscribe();
   }, [loadProfile]);
 
-  const refreshProfile = useCallback(
-    () => loadProfile(session?.user.id),
-    [loadProfile, session]
-  );
+  // Read the live session (not a possibly-stale closure) so a just-created
+  // guest never gets their fresh profile wiped right after sign-in.
+  const refreshProfile = useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    await loadProfile(data.session?.user.id);
+  }, [loadProfile]);
 
   const signOut = async () => {
     await supabase.auth.signOut();

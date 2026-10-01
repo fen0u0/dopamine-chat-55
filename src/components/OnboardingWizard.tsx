@@ -75,6 +75,16 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
   const go = (d: number) => { setDir(d); setStep((s) => s + d); };
   const aliasOk = status === "available" || status === "idle";
 
+  // Skip: keep the username picked at login, just mark onboarding done
+  const skip = async () => {
+    if (!session) return;
+    setSaving(true);
+    await supabase.from("profiles").update({ onboarding_completed: true }).eq("id", session.user.id);
+    setSaving(false);
+    await refreshProfile();
+    onClose?.();
+  };
+
   const finish = async () => {
     if (!session) return;
     setSaving(true);
@@ -114,6 +124,7 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
           </motion.button>
         ))}
       </div>
+      {editMode ? (<>
       <div className="relative">
         <input value={alias} maxLength={20}
           onChange={(e) => setAlias(e.target.value.toLowerCase().replace(/\s/g, "_"))}
@@ -128,6 +139,9 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
           : status === "available" ? <span className="text-primary">✓ available</span>
           : message ? <span className="text-destructive">{message}</span> : null}
       </p>
+      </>) : (
+        <p className="font-jb text-sm text-muted-foreground">you're <span className="text-foreground">@{alias}</span> — change it anytime in your profile</p>
+      )}
     </div>,
     <div key="1" className="space-y-5">
       <h2 className="text-2xl font-bold">what are you into? 🌀</h2>
@@ -188,9 +202,13 @@ const OnboardingWizard = ({ open, onClose, editMode }: Props) => {
             initial={{ y: 40, scale: 0.96 }} animate={{ y: 0, scale: 1 }} transition={spring}>
             <div className="flex items-center justify-between">
               <span className="font-jb text-xs text-muted-foreground">[{String(step + 1).padStart(2, "0")}/04]</span>
-              {editMode && (
+              {editMode ? (
                 <button onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-foreground">
                   <X className="w-5 h-5" />
+                </button>
+              ) : (
+                <button onClick={skip} disabled={saving} className="font-jb text-xs text-muted-foreground hover:text-foreground">
+                  skip for now →
                 </button>
               )}
             </div>
