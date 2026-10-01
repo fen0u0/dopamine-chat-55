@@ -29,15 +29,22 @@ const Login = () => {
     setError(null);
     try {
       if (!session) {
-        const { error: e } = await supabase.auth.signInAnonymously();
-        if (e) {
-          setError(e.message ?? "couldn't sign in");
+        const { data, error: signInError } = await supabase.auth.signInAnonymously();
+        if (signInError) {
+          setError("guest access is unavailable right now");
+          return;
+        }
+        if (!data.session) {
+          setError("guest access is unavailable right now");
           return;
         }
       }
-      // AuthProvider loads the guest profile after the session changes. Let its
-      // guarded effect navigate only after the profile is ready, so Home does
-      // not redirect back to Login while the onboarding wizard is mounting.
+
+      // Leave the login screen as soon as auth succeeds. The auth provider and
+      // onboarding gate continue loading the profile in the background.
+      navigate("/", { replace: true });
+    } catch {
+      setError("guest access is unavailable right now");
     } finally {
       setBusy(false);
     }
