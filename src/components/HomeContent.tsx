@@ -7,6 +7,8 @@ import { profiles as demoProfiles } from "@/data/profiles";
 import { Profile } from "@/types/profile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { getOrCreateConversation } from "@/lib/chat";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import ProfileCardExpanded from "./ProfileCardExpanded";
 import { 
@@ -238,9 +240,13 @@ const HomeContent = ({ userMood, searchTerm = "" }: HomeContentProps) => {
     setSelectedProfile(profile);
   };
 
-  const handleMessage = () => {
-    if (selectedProfile) {
-      navigate(`/chat/${selectedProfile.id}`);
+  const handleMessage = async () => {
+    if (!selectedProfile || !currentProfile) return;
+    try {
+      const conversationId = await getOrCreateConversation(currentProfile.id, selectedProfile.id);
+      navigate(`/chat/${conversationId}`);
+    } catch {
+      toast.error("couldn't open chat, try again");
     }
   };
 
