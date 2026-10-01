@@ -40,7 +40,7 @@ const GlobalChat = () => {
       });
 
     const channel = supabase
-      .channel("global-chat")
+      .channel(`global-chat-${crypto.randomUUID()}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "global_chat_messages" }, (payload) => {
         const message = payload.new as GlobalMessage;
         setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
