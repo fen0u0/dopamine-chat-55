@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { randomAlias } from "@/lib/chat";
 
 export interface VibeProfile {
   id: string;
@@ -58,13 +59,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       syncLegacyStorage(null);
       return;
     }
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
       .select(PROFILE_COLUMNS)
       .eq("id", userId)
       .maybeSingle();
     if (id !== reqId.current) return;
-    const p = (data as VibeProfile | null) ?? null;
+
+    let p = (data as VibeProfile | null) ?? null;
+    if (!p && !error) {
+      const { data: created } = await supabase
+        .from("profiles")
+        .insert({ id: userId, username: randomAlias(), avatar: "👻" })
+        .select(PROFILE_COLUMNS)
+        .maybeSingle();
+      p = (created as VibeProfile | null) ?? null;
+    }
+
+    if (id !== reqId.current) return;
     setProfile(p);
     syncLegacyStorage(p);
   }, []);
