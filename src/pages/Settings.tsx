@@ -1,5 +1,7 @@
 import { useState } from "react";
 import SignOutButton from "@/components/SignOutButton";
+import { useAuth } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -44,8 +46,11 @@ import { Switch } from "@/components/ui/switch";
 const Settings = () => {
   const navigate = useNavigate();
   const settings = useSettings();
+  const { profile, signOut } = useAuth();
   const [showMoodMatch, setShowMoodMatch] = useState(false);
   const [showAppGuide, setShowAppGuide] = useState(false);
+  const [dangerAction, setDangerAction] = useState<"deactivate" | "delete" | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
 
   const handleMoodMatch = (profile: Profile) => {
     navigate(`/chat/${profile.id}`);
@@ -392,7 +397,13 @@ const Settings = () => {
             ].map((item) => (
               <motion.button
                 key={item.label}
-                onClick={() => toast.error("this would do something scary")}
+                onClick={() => {
+                  if (item.label === "blocked users") {
+                    toast.info("no blocked users yet — peace for now");
+                  } else {
+                    setDangerAction(item.label === "delete account" ? "delete" : "deactivate");
+                  }
+                }}
                 className="w-full flex items-center gap-3 py-3 px-2 rounded-xl hover:bg-destructive/10 transition-colors"
                 whileHover={{ x: 4 }}
               >
@@ -427,6 +438,61 @@ const Settings = () => {
         isOpen={showAppGuide}
         onClose={() => setShowAppGuide(false)}
       />
+
+      {dangerAction && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="danger-title"
+            className="w-full max-w-sm rounded-3xl border border-destructive/30 bg-background p-5 shadow-2xl"
+            initial={{ opacity: 0, scale: 0.94, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+          >
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-destructive">wait bestie</p>
+            <h2 id="danger-title" className="text-xl font-semibold text-foreground">
+              {dangerAction === "delete" ? "delete your account?" : "take a little internet break?"}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {dangerAction === "delete"
+                ? "this removes your profile and signs you out. there is no undo button."
+                : "we will sign you out for now. come back whenever the vibes are right."}
+            </p>
+            <div className="mt-5 flex gap-2">
+              <button
+                type="button"
+                onClick={() => setDangerAction(null)}
+                disabled={actionBusy}
+                className="flex-1 rounded-xl bg-secondary px-4 py-3 text-sm font-medium text-foreground"
+              >
+                never mind
+              </button>
+              <button
+                type="button"
+                disabled={actionBusy}
+                onClick={async () => {
+                  setActionBusy(true);
+                  try {
+                    if (dangerAction === "delete" && profile?.id) {
+                      const { error } = await supabase.from("profiles").delete().eq("id", profile.id);
+                      if (error) throw error;
+                    }
+                    await signOut();
+                    window.location.assign("https://google.com");
+                  } catch (error) {
+                    console.error("[v0] account action failed", { action: dangerAction, error });
+                    toast.error("that action glitched. your account is still here.");
+                    setActionBusy(false);
+                  }
+                }}
+                className="flex-1 rounded-xl bg-destructive px-4 py-3 text-sm font-semibold text-destructive-foreground disabled:opacity-50"
+              >
+                {actionBusy ? "doing the thing..." : dangerAction === "delete" ? "yes, delete it" : "log me out"}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
