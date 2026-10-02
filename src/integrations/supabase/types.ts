@@ -181,14 +181,9 @@ export type Database = {
           created_at: string
           green_flags: string[]
           id: string
-      into_tags: string[]
-      looking_for: string | null
-      anonymity: string | null
-      energy: string | null
-      active_hours: string | null
-      reply_speed: string | null
-      mood: string
-      onboarding_completed: boolean
+          into_tags: string[]
+          mood: string | null
+          onboarding_completed: boolean
           red_flags: string[]
           unpopular_opinion: string | null
           updated_at: string
