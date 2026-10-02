@@ -418,10 +418,10 @@ const Profile = () => {
               whileHover={{ x: 4 }}
             >
               <div className="flex items-center gap-3">
-                <span className={item.danger ? "text-destructive" : item.highlight ? "text-primary" : "text-muted-foreground"}>
+                <span className={(item as any).danger ? "text-destructive" : (item as any).highlight ? "text-primary" : "text-muted-foreground"}>
                   {item.icon}
                 </span>
-                <span className={`font-medium ${item.danger ? "text-destructive" : item.highlight ? "text-primary" : "text-foreground"}`}>
+                <span className={`font-medium ${(item as any).danger ? "text-destructive" : (item as any).highlight ? "text-primary" : "text-foreground"}`}>
                   {item.label}
                 </span>
               </div>
