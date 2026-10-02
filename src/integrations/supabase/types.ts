@@ -85,6 +85,35 @@ export type Database = {
           },
         ]
       }
+      global_chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          sender_id: string
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sender_id: string
+          text: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sender_id?: string
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "global_chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_reactions: {
         Row: {
           conversation_id: string
@@ -175,46 +204,61 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_hours: string | null
+          anonymity: string | null
           aura_color: string
           avatar: string
           bio_currently: string | null
           created_at: string
+          energy: string | null
           green_flags: string[]
           id: string
           into_tags: string[]
+          looking_for: string | null
           mood: string | null
           onboarding_completed: boolean
           red_flags: string[]
+          reply_speed: string | null
           unpopular_opinion: string | null
           updated_at: string
           username: string
         }
         Insert: {
+          active_hours?: string | null
+          anonymity?: string | null
           aura_color?: string
           avatar?: string
           bio_currently?: string | null
           created_at?: string
+          energy?: string | null
           green_flags?: string[]
           id: string
           into_tags?: string[]
+          looking_for?: string | null
           mood?: string | null
           onboarding_completed?: boolean
           red_flags?: string[]
+          reply_speed?: string | null
           unpopular_opinion?: string | null
           updated_at?: string
           username: string
         }
         Update: {
+          active_hours?: string | null
+          anonymity?: string | null
           aura_color?: string
           avatar?: string
           bio_currently?: string | null
           created_at?: string
+          energy?: string | null
           green_flags?: string[]
           id?: string
           into_tags?: string[]
+          looking_for?: string | null
           mood?: string | null
           onboarding_completed?: boolean
           red_flags?: string[]
+          reply_speed?: string | null
           unpopular_opinion?: string | null
           updated_at?: string
           username?: string
