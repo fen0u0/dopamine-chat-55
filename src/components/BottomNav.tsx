@@ -2,32 +2,28 @@ import { motion } from "framer-motion";
 import { Heart, MessageCircle, User, Ghost, Globe2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { matches } from "@/data/profiles";
-
 interface NavItem {
   icon: React.ReactNode;
   label: string;
   path: string;
-  badge?: number;
 }
 
 const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const unreadCount = matches.reduce((acc, m) => acc + (m.unreadCount || 0), 0);
-
   const navItems: NavItem[] = [
     { icon: <Heart className="w-6 h-6" />, label: "home", path: "/" },
-    { icon: <MessageCircle className="w-6 h-6" />, label: "chats", path: "/chats", badge: unreadCount },
+    { icon: <MessageCircle className="w-6 h-6" />, label: "chats", path: "/chats" },
     { icon: <Globe2 className="w-6 h-6" />, label: "global", path: "/global-chat" },
     { icon: <Ghost className="w-6 h-6" />, label: "confess", path: "/confessions" },
     { icon: <User className="w-6 h-6" />, label: "profile", path: "/profile" },
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 glass border-t border-border z-40">
-      <div className="flex items-center justify-around py-3 px-4 max-w-2xl mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t-2 border-border bg-background/95 font-jb backdrop-blur-md">
+      <div className="retro-scanlines pointer-events-none absolute inset-0 opacity-[0.06]" aria-hidden="true" />
+      <div className="relative flex items-center justify-around px-3 py-2.5 max-w-2xl mx-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
@@ -35,26 +31,17 @@ const BottomNav = () => {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                "nav-item relative px-4 py-1",
-                isActive && "active"
+                "nav-item relative min-w-14 px-2 py-1.5 text-muted-foreground transition-colors",
+                isActive && "active text-primary"
               )}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              aria-label={item.label}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.92 }}
             >
-              <div className="relative">
+              <div className="relative mx-auto flex h-7 w-7 items-center justify-center border border-current/20 bg-foreground/[0.02] [image-rendering:pixelated]">
                 {item.icon}
-                {item.badge && item.badge > 0 && (
-                  <motion.span 
-                    className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full text-xs flex items-center justify-center text-primary-foreground font-bold"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring" }}
-                  >
-                    {item.badge}
-                  </motion.span>
-                )}
               </div>
-              <span className="text-xs mt-1 font-medium">{item.label}</span>
+              <span className="mt-1 block text-[9px] font-semibold uppercase tracking-[0.12em]">{item.label}</span>
               {isActive && (
                 <motion.div
                   className="absolute -bottom-3 left-1/2 w-1 h-1 bg-primary rounded-full"
