@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Heart, MessageCircle, User, Ghost, Globe2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -27,16 +26,15 @@ const BottomNav = () => {
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
-            <motion.button
+            <button
               key={item.path}
+              type="button"
               onClick={() => navigate(item.path)}
               className={cn(
-                "nav-item relative min-w-14 px-2 py-1.5 text-muted-foreground transition-colors",
+                "nav-item relative min-w-14 px-2 py-1.5 text-muted-foreground transition-colors hover:-translate-y-0.5 active:scale-95",
                 isActive && "active text-primary"
               )}
               aria-label={item.label}
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.92 }}
             >
               <div className="relative mx-auto flex h-7 w-7 items-center justify-center border border-current/20 bg-foreground/[0.02] [image-rendering:pixelated]">
                 {item.icon}
@@ -49,7 +47,7 @@ const BottomNav = () => {
                   style={{ x: "-50%" }}
                 />
               )}
-            </motion.button>
+            </button>
           );
         })}
       </div>
