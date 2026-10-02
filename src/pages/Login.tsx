@@ -101,7 +101,7 @@ const Login = () => {
             animate={{ opacity: 1, y: 0 }}
           >
             <h1 className="text-3xl font-bold gradient-text">vibe~</h1>
-            <p className="text-muted-foreground">no names. no faces. just vibes.</p>
+            <p className="text-muted-foreground">meet strangers online</p>
 
             {shownError && <p className="text-sm text-destructive">{shownError}</p>}
 
