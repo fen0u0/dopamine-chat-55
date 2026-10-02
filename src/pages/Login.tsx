@@ -64,7 +64,10 @@ const Login = () => {
   const shownError = error;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 overflow-hidden relative">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.08] retro-scanlines" aria-hidden="true" />
+      <div className="pointer-events-none absolute left-6 top-8 font-jb text-xs text-primary/70" aria-hidden="true">[vibe.exe]</div>
+      <div className="pointer-events-none absolute right-6 bottom-8 font-jb text-xs text-muted-foreground" aria-hidden="true">status: online</div>
       <AnimatePresence mode="wait">
         {showSplash || loading ? (
           <motion.div
@@ -100,15 +103,18 @@ const Login = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-3xl font-bold gradient-text">vibe~</h1>
-            <p className="text-muted-foreground">meet strangers online</p>
+            <div className="mb-8">
+              <div className="mb-3 font-jb text-xs tracking-[0.3em] text-primary/80">✦ WELCOME TO THE VOID ✦</div>
+              <h1 className="font-jb text-4xl font-bold tracking-tight text-primary retro-glow">vibe~</h1>
+              <p className="mt-3 font-jb text-sm text-muted-foreground">meet strangers online</p>
+            </div>
 
             {shownError && <p className="text-sm text-destructive">{shownError}</p>}
 
             <button
               onClick={handleGuest}
               disabled={busy}
-              className="w-full py-3 rounded-xl font-semibold bg-primary text-primary-foreground disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full border-2 border-primary py-3 font-jb text-sm font-semibold uppercase tracking-wide bg-primary text-primary-foreground shadow-[4px_4px_0_hsl(var(--foreground)/0.18)] transition-transform hover:-translate-y-0.5 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {busy && <Loader2 className="w-4 h-4 animate-spin" />}
               {busy ? "entering..." : "enter as guest"}
@@ -120,7 +126,7 @@ const Login = () => {
             <button
               onClick={handleGoogle}
               disabled={googleBusy}
-              className="w-full py-3 rounded-xl font-semibold bg-secondary border border-border hover:bg-secondary/70 disabled:opacity-60 flex items-center justify-center gap-2"
+              className="w-full border-2 border-border py-3 font-jb text-sm font-semibold uppercase tracking-wide bg-secondary hover:border-primary/60 hover:bg-secondary/80 disabled:opacity-60 flex items-center justify-center gap-2"
             >
               {googleBusy && <Loader2 className="w-4 h-4 animate-spin" />}
               {googleBusy ? "opening google…" : "continue with Google"}
@@ -128,6 +134,10 @@ const Login = () => {
             <p className="text-[11px] text-muted-foreground">
               google only saves your chats across devices — others only ever see your alias
             </p>
+            <div className="pt-3 font-jb text-[10px] tracking-[0.18em] text-muted-foreground/70">
+              <span className="mr-1 text-primary/80" aria-hidden="true">✦</span>
+              made by fen
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
