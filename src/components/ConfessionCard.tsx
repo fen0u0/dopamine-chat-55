@@ -43,6 +43,7 @@ interface ConfessionCardProps {
   onReactToComment: (confessionId: string, commentId: string, reaction: keyof Comment["reactions"]) => void;
   onFlag: (confessionId: string, flag: "red" | "green") => void;
   onDeleteComment: (confessionId: string, commentId: string) => void;
+  onDeleteConfession: (confessionId: string) => void;
 }
 
 export const ConfessionCard = ({
@@ -52,6 +53,7 @@ export const ConfessionCard = ({
   onReactToComment,
   onFlag,
   onDeleteComment,
+  onDeleteConfession,
 }: ConfessionCardProps) => {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
@@ -120,6 +122,21 @@ export const ConfessionCard = ({
           {confession.avatar}
         </div>
         <div className="flex-1 min-w-0">
+          <div className="flex justify-end">
+            {isOwnConfession && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm("Delete this confession permanently?")) onDeleteConfession(confession.id);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs text-destructive hover:bg-destructive/10"
+                aria-label="Delete confession permanently"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                delete
+              </button>
+            )}
+          </div>
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-medium text-foreground">
               {getDisplayName(confession.anonName, confession.avatar)}

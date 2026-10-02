@@ -283,6 +283,28 @@ const Confessions = () => {
     );
   };
 
+  const handleDeleteConfession = async (confessionId: string) => {
+    if (!profile) return;
+    const previous = confessions;
+    setConfessions((current) => current.filter((confession) => confession.id !== confessionId));
+    const { error } = await supabase
+      .from("confessions")
+      .delete()
+      .eq("id", confessionId)
+      .eq("user_id", profile.id);
+    if (error) {
+      console.error("[confessions] failed to delete confession", {
+        code: error.code,
+        message: error.message,
+        details: error.details,
+      });
+      setConfessions(previous);
+      toast.error("couldn't delete confession");
+      return;
+    }
+    toast.success("confession permanently deleted");
+  };
+
   const handleAddComment = (confessionId: string, comment: Comment) => {
     setConfessions((prev) =>
       prev.map((conf) =>
@@ -378,6 +400,7 @@ const Confessions = () => {
                 onReactToComment={handleReactToComment}
                 onFlag={handleFlagConfession}
                 onDeleteComment={handleDeleteComment}
+                onDeleteConfession={handleDeleteConfession}
               />
             ))
           )}
