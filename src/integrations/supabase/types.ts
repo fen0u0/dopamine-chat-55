@@ -175,46 +175,61 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_hours: string | null
+          anonymity: string | null
           aura_color: string
           avatar: string
           bio_currently: string | null
           created_at: string
+          energy: string | null
           green_flags: string[]
           id: string
           into_tags: string[]
+          looking_for: string | null
           mood: string | null
           onboarding_completed: boolean
           red_flags: string[]
+          reply_speed: string | null
           unpopular_opinion: string | null
           updated_at: string
           username: string
         }
         Insert: {
+          active_hours?: string | null
+          anonymity?: string | null
           aura_color?: string
           avatar?: string
           bio_currently?: string | null
           created_at?: string
+          energy?: string | null
           green_flags?: string[]
           id: string
           into_tags?: string[]
+          looking_for?: string | null
           mood?: string | null
           onboarding_completed?: boolean
           red_flags?: string[]
+          reply_speed?: string | null
           unpopular_opinion?: string | null
           updated_at?: string
           username: string
         }
         Update: {
+          active_hours?: string | null
+          anonymity?: string | null
           aura_color?: string
           avatar?: string
           bio_currently?: string | null
           created_at?: string
+          energy?: string | null
           green_flags?: string[]
           id?: string
           into_tags?: string[]
+          looking_for?: string | null
           mood?: string | null
           onboarding_completed?: boolean
           red_flags?: string[]
+          reply_speed?: string | null
           unpopular_opinion?: string | null
           updated_at?: string
           username?: string

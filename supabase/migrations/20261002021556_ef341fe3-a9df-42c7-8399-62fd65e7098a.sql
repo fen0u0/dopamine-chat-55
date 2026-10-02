@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS looking_for text, ADD COLUMN IF NOT EXISTS anonymity text, ADD COLUMN IF NOT EXISTS energy text, ADD COLUMN IF NOT EXISTS active_hours text, ADD COLUMN IF NOT EXISTS reply_speed text;
