@@ -6,6 +6,16 @@
   .vibe-wizard-bg { background-color: hsl(263 33% 6% / 0.97); } /* #0d0a14 */
   .vibe-glass { @apply rounded-3xl border border-foreground/10 bg-foreground/[0.04] backdrop-blur-xl; }
   .font-jb { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .retro-glow { text-shadow: 3px 3px 0 hsl(var(--primary) / 0.18); }
+  .retro-scanlines {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 3px,
+      hsl(var(--foreground) / 0.35) 3px,
+      hsl(var(--foreground) / 0.35) 4px
+    );
+  }
 }
 @tailwind components;
 @tailwind utilities;
