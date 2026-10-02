@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { Heart, MessageCircle, User, Ghost, Globe2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
