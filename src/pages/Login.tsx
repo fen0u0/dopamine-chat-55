@@ -134,6 +134,10 @@ const Login = () => {
             <p className="text-[11px] text-muted-foreground">
               google only saves your chats across devices — others only ever see your alias
             </p>
+            <div className="pt-3 font-jb text-[10px] tracking-[0.18em] text-muted-foreground/70">
+              <span className="mr-1 text-primary/80" aria-hidden="true">✦</span>
+              made by fen
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
