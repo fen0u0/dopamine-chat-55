@@ -5,10 +5,7 @@ import {
   Settings,
   Edit2,
   Globe,
-  Shield,
-  LogOut,
   ChevronRight,
-  Gem,
   Sparkles,
   Coffee,
   Moon,
@@ -29,8 +26,6 @@ import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import EditProfileModal from "@/components/EditProfileModal";
 import OnboardingWizard from "@/components/OnboardingWizard";
-import SafetyCenterModal from "@/components/SafetyCenterModal";
-import { useGems } from "@/contexts/GemsContext";
 import { useStats } from "@/contexts/StatsContext";
 import { toast } from "sonner";
 import { generateRandomAlias, moodOptions } from "@/data/profiles";
@@ -39,11 +34,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { gems } = useGems();
   const { getAura, getEnergy, messagesSent, profilesOpened } = useStats();
   const { profile, refreshProfile } = useAuth();
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showSafetyModal, setShowSafetyModal] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [profileVersion, setProfileVersion] = useState(0);
   
@@ -121,16 +114,8 @@ const Profile = () => {
     { icon: <Moon className="w-4 h-4" />, label: "3am talks" },
   ];
 
-  const handleLogout = () => {
-    toast.success("vanished into the void ✌️");
-  };
-
   const menuItems = [
-    { icon: <Gem className="w-5 h-5" />, label: "get gems", chevron: true, action: () => navigate("/settings") },
-    { icon: <Shield className="w-5 h-5" />, label: "safety center", chevron: true, action: () => setShowSafetyModal(true) },
     { icon: <Settings className="w-5 h-5" />, label: "settings", chevron: true, action: () => navigate("/settings") },
-    { icon: <Sparkles className="w-5 h-5" />, label: "go premium ✨", highlight: true, action: () => navigate("/settings") },
-    { icon: <LogOut className="w-5 h-5" />, label: "vanish", danger: true, action: handleLogout },
   ];
 
   return (
@@ -199,20 +184,18 @@ const Profile = () => {
 
         {/* Stats */}
         <motion.div
-          className="grid grid-cols-3 gap-3 mb-6"
+          className="grid grid-cols-2 gap-3 mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
           {[
-            { label: "gems", value: gems.toString(), icon: "💎" },
             { label: "profiles seen", value: profilesOpened.toString(), icon: "👻" },
             { label: "messages", value: messagesSent.toString(), icon: "💬" },
           ].map((stat) => (
             <motion.div
               key={stat.label}
               className="stat-card"
-              onClick={() => stat.label === "gems" && navigate("/settings")}
               whileTap={{ scale: 0.98 }}
             >
               <p className="text-2xl mb-1">{stat.icon}</p>
@@ -464,10 +447,6 @@ const Profile = () => {
           setShowWizard(false);
           handleProfileSave();
         }}
-      />
-      <SafetyCenterModal
-        isOpen={showSafetyModal}
-        onClose={() => setShowSafetyModal(false)}
       />
     </div>
   );

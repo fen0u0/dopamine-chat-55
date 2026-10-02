@@ -103,7 +103,7 @@ const Home = () => {
           animate={{ opacity: [0.4, 0.6, 0.4] }}
           transition={{ duration: 3, repeat: Infinity }}
         >
-          no faces, just vibes 🌙
+          meet strangers online
         </motion.p>
       </main>
 
