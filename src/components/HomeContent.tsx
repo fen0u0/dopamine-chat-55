@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -105,15 +105,13 @@ const ProfileHoverCard = ({ profile }: { profile: Profile }) => {
 
         <div className="flex items-center justify-between text-[10px] text-muted-foreground">
           <div className="flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-primary" />
+            <Sparkles className="w-3 h-3 text-primary pixel-icon" />
             <span>{profile.interests?.slice(0, 2).join(', ')}</span>
           </div>
-          {profile.isOnline && (
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-              online
-            </span>
-          )}
+          <span className={cn("flex items-center gap-1", profile.isOnline ? "text-emerald-400" : "text-muted-foreground/60")}>
+            <span className={cn("h-1.5 w-1.5", profile.isOnline ? "bg-emerald-400" : "bg-muted-foreground/50")} />
+            {profile.isOnline ? "online rn" : "offline"}
+          </span>
         </div>
 
         <div className="flex items-center justify-center gap-3 mt-3 pt-2 border-t border-border/30">
@@ -198,9 +196,39 @@ const HomeContent = ({ userMood, searchTerm = "" }: HomeContentProps) => {
   const { profile: currentProfile } = useAuth();
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
   const [hoveredProfile, setHoveredProfile] = useState<string | null>(null);
+  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!currentProfile?.id) return;
+
+    const presenceChannel = supabase.channel("vibe-online-users", {
+      config: { presence: { key: currentProfile.id } },
+    });
+
+    const syncPresence = () => {
+      const state = presenceChannel.presenceState<{ user_id: string }>();
+      const ids = new Set(Object.keys(state));
+      setOnlineUserIds(ids);
+    };
+
+    presenceChannel
+      .on("presence", { event: "sync" }, syncPresence)
+      .on("presence", { event: "join" }, syncPresence)
+      .on("presence", { event: "leave" }, syncPresence)
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await presenceChannel.track({ user_id: currentProfile.id });
+          syncPresence();
+        }
+      });
+
+    return () => {
+      void supabase.removeChannel(presenceChannel);
+    };
+  }, [currentProfile?.id]);
 
   const { data: liveProfiles = [], isLoading } = useQuery({
-    queryKey: ["home-profiles"],
+    queryKey: ["home-profiles", currentProfile?.id, [...onlineUserIds].sort().join(",")],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("profiles")
@@ -215,7 +243,7 @@ const HomeContent = ({ userMood, searchTerm = "" }: HomeContentProps) => {
         bio: item.bio_currently || "here to vibe and connect",
         images: item.avatar ? [item.avatar] : [],
         interests: item.into_tags ?? [],
-        isOnline: false,
+        isOnline: onlineUserIds.has(item.id),
         mood: item.mood ?? undefined,
         vibe: "good energy",
       } satisfies Profile));
@@ -310,7 +338,7 @@ const HomeContent = ({ userMood, searchTerm = "" }: HomeContentProps) => {
                       },
                     }}
                   >
-                    <IconComponent className={cn(iconSizes[pos.size], "opacity-80")} />
+                    <IconComponent className={cn(iconSizes[pos.size], "opacity-80 pixel-icon")} />
                     
                     {profile.isOnline && (
                       <motion.span 

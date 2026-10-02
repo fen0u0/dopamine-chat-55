@@ -7,6 +7,17 @@
   .vibe-glass { @apply rounded-3xl border border-foreground/10 bg-foreground/[0.04] backdrop-blur-xl; }
   .font-jb { font-family: 'JetBrains Mono', ui-monospace, monospace; }
   .retro-glow { text-shadow: 3px 3px 0 hsl(var(--primary) / 0.18); }
+  .pixel-icon {
+    shape-rendering: crispEdges;
+    filter: drop-shadow(2px 2px 0 hsl(var(--primary) / 0.2));
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+  }
+  .pixel-label {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    letter-spacing: -0.04em;
+    text-shadow: 2px 2px 0 hsl(var(--primary) / 0.16);
+  }
   .retro-scanlines {
     background-image: repeating-linear-gradient(
       to bottom,
