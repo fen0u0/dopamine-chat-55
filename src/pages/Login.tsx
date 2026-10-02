@@ -53,6 +53,21 @@ const Login = () => {
   const handleGoogle = async () => {
     setError(null);
     setGoogleBusy(true);
+    const host = window.location.hostname;
+    const onLovable =
+      host.endsWith(".lovable.app") || host.endsWith(".lovableproject.com") || host === "localhost";
+    if (!onLovable) {
+      // External hosting (e.g. Vercel): use your own Google OAuth client directly.
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin },
+      });
+      if (oauthError) {
+        setGoogleBusy(false);
+        setError(oauthError.message ?? "google sign-in failed");
+      }
+      return;
+    }
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
